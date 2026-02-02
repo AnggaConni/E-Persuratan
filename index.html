@@ -1,7 +1,7 @@
 <!-- 
     =============================================
-    E-PERSURATAN GOV SYSTEM (LIVE v4.2)
-    Mode: Full CRUD + Enterprise Loading UI + Fix Connection
+    E-PERSURATAN GOV SYSTEM (LIVE v4.4)
+    Mode: FIXED URL + Enterprise Features + 1M Data Logic
     Developed by: Angga Conni Saputra
     =============================================
 -->
@@ -33,34 +33,18 @@
         .status-done { @apply bg-slate-800 text-white border-slate-900; }
         .status-archived { @apply bg-yellow-50 text-yellow-700 border-yellow-100; }
         
-        /* ENTERPRISE LOADING UI */
-        .loading-overlay { 
-            @apply fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/70 backdrop-blur-sm transition-opacity duration-300;
-        }
-        .loader-box {
-            @apply bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-full border border-gray-100 relative overflow-hidden;
-            animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .loader-box::before {
-            content: '';
-            @apply absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 animate-pulse;
-        }
-        .loader-spinner {
-            @apply w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-4;
-        }
-        @keyframes slideUpFade {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        /* Loading UI */
+        .loading-overlay { @apply fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/70 backdrop-blur-sm transition-opacity duration-300; }
+        .loader-box { @apply bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-full border border-gray-100 relative overflow-hidden; animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .loader-box::before { content: ''; @apply absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 animate-pulse; }
+        .loader-spinner { @apply w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-4; }
+        @keyframes slideUpFade { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
         .read-only-mode input, .read-only-mode select, .read-only-mode textarea { background-color: #f9fafb; cursor: not-allowed; opacity: 0.7; pointer-events: none; }
         .read-only-mode button[type="submit"], .read-only-mode #inputFile { display: none; }
         .hidden-in-readonly { display: none !important; }
         
-        /* Animations */
-        .fade-enter { animation: fadeIn 0.3s ease-out; }
         .modal-enter { animation: zoomIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes zoomIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
         
         /* Toast Notifications */
@@ -87,19 +71,24 @@
                         <i class="fa-solid fa-layer-group text-white text-lg"></i>
                     </div>
                     <div class="flex flex-col">
-                        <span class="font-bold text-lg tracking-tight">E-Persuratan <span class="text-blue-400 font-light">Cloud v4.2</span></span>
+                        <span class="font-bold text-lg tracking-tight">E-Persuratan <span class="text-blue-400 font-light">Cloud v4.4</span></span>
                         <span class="text-[10px] text-gray-400">Develop by - Angga Conni Saputra</span>
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
                     <div id="userInfoPanel" class="hidden md:flex flex-col text-right border-r border-slate-700 pr-4">
                         <div class="text-xs text-gray-400">Status Akses</div>
                         <div id="userRoleDisplay" class="text-sm font-semibold text-yellow-400">Read Only (Guest)</div>
                     </div>
                     
+                    <!-- REFRESH DATA BUTTON -->
+                    <button onclick="loadData(true)" class="bg-slate-700 hover:bg-slate-600 w-9 h-9 rounded flex items-center justify-center transition group relative" title="Force Refresh Data">
+                        <i class="fa-solid fa-rotate text-white text-xs group-hover:animate-spin"></i>
+                    </button>
+
                     <button onclick="handleAuthClick()" id="authBtn" class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded text-xs font-bold transition flex items-center gap-2">
-                        <i class="fa-solid fa-right-to-bracket"></i> Login Admin
+                        <i class="fa-solid fa-right-to-bracket"></i> Login
                     </button>
                 </div>
             </div>
@@ -126,14 +115,18 @@
             <div class="lg:col-span-2 glass-panel p-5 relative">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-gray-700 flex items-center"><i class="fa-solid fa-chart-line mr-2 text-blue-600"></i> Statistik Surat</h3>
-                    <button onclick="loadData()" class="text-xs text-blue-500 hover:underline flex items-center gap-1"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                    <div class="flex gap-2">
+                        <select id="chartFilterRange" onchange="renderChart()" class="text-xs border rounded p-1 bg-white"><option value="6">6 Bulan</option><option value="12">1 Tahun</option></select>
+                        <button onclick="loadData(true)" class="text-xs text-blue-500 hover:underline flex items-center gap-1"><i class="fa-solid fa-rotate"></i></button>
+                    </div>
                 </div>
                 <div class="relative h-64 w-full"><canvas id="trafficChart"></canvas></div>
             </div>
+            <!-- MINI STATS WITH BIG NUMBER FORMAT -->
             <div class="lg:col-span-1 grid grid-cols-1 gap-4">
-                <div class="glass-panel p-4 border-l-4 border-blue-500 flex justify-between items-center"><div><div class="text-gray-500 text-xs font-bold uppercase">Total Arsip</div><div class="text-3xl font-bold mt-1" id="stat-total">-</div></div><i class="fa-solid fa-database text-blue-200 text-4xl"></i></div>
-                <div class="glass-panel p-4 border-l-4 border-yellow-400 flex justify-between items-center"><div><div class="text-gray-500 text-xs font-bold uppercase">Surat Masuk</div><div class="text-3xl font-bold mt-1 text-yellow-600" id="stat-in">-</div></div><i class="fa-solid fa-inbox text-yellow-200 text-4xl"></i></div>
-                <div class="glass-panel p-4 border-l-4 border-slate-700 flex justify-between items-center"><div><div class="text-gray-500 text-xs font-bold uppercase">Surat Keluar</div><div class="text-3xl font-bold mt-1 text-slate-700" id="stat-out">-</div></div><i class="fa-solid fa-paper-plane text-slate-200 text-4xl"></i></div>
+                <div class="glass-panel p-4 border-l-4 border-blue-500 flex justify-between items-center"><div><div class="text-gray-500 text-xs font-bold uppercase">Total Arsip</div><div class="text-3xl font-bold mt-1" id="stat-total">0</div></div><i class="fa-solid fa-database text-blue-200 text-4xl"></i></div>
+                <div class="glass-panel p-4 border-l-4 border-yellow-400 flex justify-between items-center"><div><div class="text-gray-500 text-xs font-bold uppercase">Surat Masuk</div><div class="text-3xl font-bold mt-1 text-yellow-600" id="stat-in">0</div></div><i class="fa-solid fa-inbox text-yellow-200 text-4xl"></i></div>
+                <div class="glass-panel p-4 border-l-4 border-slate-700 flex justify-between items-center"><div><div class="text-gray-500 text-xs font-bold uppercase">Surat Keluar</div><div class="text-3xl font-bold mt-1 text-slate-700" id="stat-out">0</div></div><i class="fa-solid fa-paper-plane text-slate-200 text-4xl"></i></div>
             </div>
         </div>
 
@@ -179,6 +172,7 @@
                         <div class="relative">
                             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Jenis Dokumen</label>
                             <select id="inputJenis" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs transition-all"><option value="">...</option></select>
+                            <!-- Custom Input appears when "Lain-lain" is selected -->
                             <div id="customJenisContainer" class="hidden mt-2 bg-blue-50 p-2 rounded border border-blue-200 transition-all">
                                 <label class="block text-[9px] font-bold text-blue-600 uppercase mb-1">Sebutkan Jenis Dokumen:</label>
                                 <input type="text" id="inputCustomJenis" placeholder="Ketik jenis dokumen..." class="w-full p-2 bg-white border border-blue-300 rounded text-xs focus:ring-1 focus:ring-blue-500 outline-none">
@@ -314,22 +308,18 @@
         </div>
     </div>
 
-    <!-- MODALS -->
+    <!-- MODALS (LOGIN, DETAIL, EDIT, CALENDAR) -->
     
-    <!-- Login Modal -->
     <div id="loginModal" class="fixed inset-0 z-[80] hidden bg-slate-900/80 backdrop-blur-sm flex items-center justify-center fade-enter"><div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm relative modal-enter"><button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times"></i></button><div class="text-center mb-6"><div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 text-2xl"><i class="fa-solid fa-user-lock"></i></div><h3 class="text-xl font-bold text-gray-800">Login Administrator</h3><p class="text-xs text-gray-500 mt-1">Gunakan akun yang terdaftar di Sheet "Users"</p></div><form onsubmit="handleLogin(event)" class="space-y-4"><div><label class="text-xs font-bold text-gray-500 uppercase">Username</label><input type="text" id="loginUser" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required></div><div><label class="text-xs font-bold text-gray-500 uppercase">Password</label><input type="password" id="loginPass" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required></div><button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition text-sm flex justify-center items-center gap-2"><span>Masuk Sistem</span> <i class="fa-solid fa-arrow-right"></i></button></form></div></div>
 
-    <!-- View Modal -->
     <div id="viewModal" class="fixed inset-0 z-50 hidden" onclick="if(event.target === this) closeViewModal()"><div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div><div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-0 w-full max-w-2xl modal-enter relative z-10 overflow-hidden"><div class="bg-blue-900 p-5 flex justify-between items-center text-white"><h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> Detail Arsip</h3><button onclick="closeViewModal()" class="hover:bg-blue-800 rounded-full w-8 h-8 flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button></div><div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto" id="viewModalContent"></div><div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-between items-center" id="viewModalFooter"></div></div></div>
 
-    <!-- Edit Modal -->
     <div id="editModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center"><div class="bg-white rounded-xl shadow-2xl p-0 w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col modal-enter"><div class="bg-amber-500 p-4 flex justify-between items-center text-white font-bold"><span><i class="fa-solid fa-pen-to-square mr-2"></i> Revisi Data Cloud</span><button onclick="closeEditModal()"><i class="fa-solid fa-times"></i></button></div><div class="p-6 overflow-y-auto"><form id="editForm" class="space-y-4"><input type="hidden" id="editId"><div class="bg-amber-50 text-amber-800 p-3 text-xs rounded border border-amber-200"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Perubahan akan langsung disimpan ke Google Sheets.</div><div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold uppercase text-gray-500">Arah</label><select id="editArah" class="w-full p-2 border rounded text-sm"><option value="Masuk">Masuk</option><option value="Keluar">Keluar</option></select></div><div><label class="text-xs font-bold uppercase text-gray-500">Nomor</label><input type="text" id="editNomor" class="w-full p-2 border rounded text-sm"></div></div><div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold uppercase text-gray-500">Tanggal</label><input type="date" id="editTanggal" class="w-full p-2 border rounded text-sm"></div><div><label class="text-xs font-bold uppercase text-gray-500">Status</label><select id="editStatus" class="w-full p-2 border rounded text-sm"><option value="Draft">Draft</option><option value="Sent">Sent</option><option value="Received">Received</option><option value="Disposisi">Disposisi</option><option value="Done">Done</option></select></div></div><div><label class="text-xs font-bold uppercase text-gray-500">Perihal</label><textarea id="editPerihal" rows="2" class="w-full p-2 border rounded text-sm"></textarea></div><div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold uppercase text-gray-500">Dari</label><input type="text" id="editDari" class="w-full p-2 border rounded text-sm"></div><div><label class="text-xs font-bold uppercase text-gray-500">Kepada</label><input type="text" id="editKepada" class="w-full p-2 border rounded text-sm"></div></div><div><label class="text-xs font-bold uppercase text-gray-500">Unit</label><input type="text" id="editUnit" class="w-full p-2 border rounded text-sm"></div><div><label class="text-xs font-bold uppercase text-gray-500">Link GDrive (Otomatis/Manual)</label><input type="text" id="editLink" class="w-full p-2 border rounded text-sm text-blue-600"></div></form></div><div class="p-4 bg-gray-50 border-t flex justify-end gap-2"><button onclick="closeEditModal()" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Batal</button><button onclick="saveEditData()" class="px-4 py-2 text-sm bg-amber-500 text-white rounded font-bold hover:bg-amber-600 shadow">Update Data</button></div></div></div>
 
-    <!-- Calendar Modal -->
     <div id="calendarModal" class="fixed inset-0 z-50 hidden" onclick="if(event.target === this) toggleCalendarModal()"><div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div><div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-6 w-full max-w-md modal-enter relative z-10"><div class="flex justify-between items-center mb-6 border-b pb-4"><h3 class="text-lg font-bold text-gray-800 flex items-center gap-2"><i class="fa-regular fa-calendar-check text-blue-600"></i> <span id="calModalTitle">Filter Tanggal</span></h3><div class="flex items-center gap-3"><button onclick="clearDateFilter()" class="text-xs text-red-500 hover:text-red-700 font-medium hover:underline"><i class="fa-solid fa-trash mr-1"></i> Reset</button><button onclick="toggleCalendarModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"><i class="fa-solid fa-times text-gray-500"></i></button></div></div><div class="bg-white"><div class="cal-header flex justify-between items-center mb-4"><button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition"><i class="fa-solid fa-chevron-left"></i></button><span id="calMonthYear" class="text-blue-900 font-bold uppercase tracking-wide text-sm">February 2026</span><button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition"><i class="fa-solid fa-chevron-right"></i></button></div><div class="grid grid-cols-7 gap-1 text-center mb-2"><div class="text-xs font-bold text-gray-400">Su</div><div class="text-xs font-bold text-gray-400">Mo</div><div class="text-xs font-bold text-gray-400">Tu</div><div class="text-xs font-bold text-gray-400">We</div><div class="text-xs font-bold text-gray-400">Th</div><div class="text-xs font-bold text-gray-400">Fr</div><div class="text-xs font-bold text-gray-400">Sa</div></div><div id="calendarGrid" class="grid grid-cols-7 gap-2"></div><div class="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400 pt-4 border-t"><span class="w-2 h-2 rounded-full bg-blue-400"></span><span id="calLegend">Ada Arsip</span></div></div></div></div>
 
     <script>
-        // WEB APP URL FINAL (NEW DEPLOYMENT)
+        // WEB APP URL FINAL (HARDCODED FOR STABILITY)
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCf7cV2GQSLEyH28E856_k0cHbLAdlszlnJrwVnc-Gr0Ko4SFl0hvRXPMZlHbUXlu3/exec"; 
         
         let db_surat = [];
@@ -352,6 +342,14 @@
             updateJenisOptions();
             document.getElementById('inputJenis').addEventListener('change', checkCustomJenis);
         });
+
+        // --- BIG NUMBER FORMATTER ---
+        function formatBigNumber(num) {
+            if (num >= 1000000000) return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+            if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+            return num;
+        }
 
         // --- UTILS & TOAST ---
         function showToast(message, type = 'success') {
@@ -429,8 +427,8 @@
         }
 
         // --- DATA CRUD ---
-        async function loadData() {
-            showLoader(true, "Memuat Data...");
+        async function loadData(forceRefresh = false) {
+            showLoader(true, forceRefresh ? "Refreshing Data..." : "Memuat Data...");
             try {
                 // Add timestamp to prevent caching
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?op=read&t=${Date.now()}`);
@@ -438,6 +436,7 @@
                 if(result.status === 'success') {
                     db_surat = result.data;
                     renderTable(); renderChart(); renderCalendar();
+                    if(forceRefresh) showToast("Data Diperbarui!");
                 }
             } catch (error) { 
                 console.error(error); 
@@ -462,6 +461,7 @@
                 const file = fileInput.files[0];
                 if (file.size > 5 * 1024 * 1024) { showToast("File Max 5MB", "error"); return; }
                 const base64 = await toBase64(file);
+                // Ensure base64 string is complete
                 filePayload = { fileData: base64, fileName: file.name, mimeType: file.type };
             }
 
@@ -490,9 +490,7 @@
                     method: 'POST', 
                     body: JSON.stringify({ op: 'create', data: data }) 
                 });
-                // Handle text/json result
                 const resText = await response.text(); 
-                // Parsing response if it returns text/html error
                 try {
                     const resJson = JSON.parse(resText);
                     if(resJson.status === 'success') {
@@ -500,7 +498,8 @@
                         document.getElementById('suratForm').reset();
                         document.getElementById('inputTanggal').valueAsDate = new Date();
                         updateJenisOptions();
-                        loadData();
+                        // Force refresh data after save to see changes immediately
+                        loadData(false);
                     } else {
                         showToast(resJson.message, "error");
                     }
@@ -554,9 +553,10 @@
             const start = (currentPage - 1) * rowsPerPage;
             const paginated = filtered.slice(start, start + rowsPerPage);
 
-            document.getElementById('stat-total').innerText = db_surat.length;
-            document.getElementById('stat-in').innerText = db_surat.filter(s=>s.arah==='Masuk').length;
-            document.getElementById('stat-out').innerText = db_surat.filter(s=>s.arah==='Keluar').length;
+            // STATS UPDATE WITH FORMATTER
+            document.getElementById('stat-total').innerText = formatBigNumber(db_surat.length);
+            document.getElementById('stat-in').innerText = formatBigNumber(db_surat.filter(s=>s.arah==='Masuk').length);
+            document.getElementById('stat-out').innerText = formatBigNumber(db_surat.filter(s=>s.arah==='Keluar').length);
             document.getElementById('paginationInfo').innerText = `Showing ${Math.min(start+1, total)}-${Math.min(start + paginated.length, total)} of ${total}`;
             document.getElementById('btnPrev').disabled = currentPage === 1;
             document.getElementById('btnNext').disabled = currentPage >= maxPage;
@@ -601,7 +601,7 @@
             }
         }
 
-        // --- CALENDAR & OTHER UTILS (Identical to previous) ---
+        // --- CALENDAR & OTHER UTILS ---
         function toggleCalendarModal() { const m = document.getElementById('calendarModal'); if(m.classList.contains('hidden')) { m.classList.remove('hidden'); renderCalendar(); } else { m.classList.add('hidden'); } }
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
@@ -671,7 +671,7 @@
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ op: 'delete', data: { id: id } }) });
                 const resJson = await response.json();
-                if(resJson.status === 'success') { showToast("Data Dihapus!"); closeViewModal(); loadData(); }
+                if(resJson.status === 'success') { showToast("Data Dihapus!"); closeViewModal(); loadData(false); }
                 else { showToast(resJson.message, "error"); }
             } catch (err) { showToast("Gagal Hapus", "error"); } finally { showLoader(false); }
         }
@@ -680,7 +680,6 @@
             const item = db_surat.find(s => s.id === id); if(!item) return;
             document.getElementById('editId').value = item.id;
             document.getElementById('editNomor').value = item.nomor;
-            // Handle date format dd/mm/yyyy to yyyy-mm-dd
             let dateVal = "";
             if (item.tanggal && item.tanggal.includes('/')) {
                 const parts = item.tanggal.split('/');
@@ -715,7 +714,7 @@
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ op: 'update', data: data }) });
                 const resJson = await response.json();
-                if(resJson.status === 'success') { showToast("Data Direvisi!"); closeEditModal(); loadData(); }
+                if(resJson.status === 'success') { showToast("Data Direvisi!"); closeEditModal(); loadData(false); }
                 else { showToast(resJson.message, "error"); }
             } catch(err) { showToast("Gagal Update", "error"); } finally { showLoader(false); }
         }
