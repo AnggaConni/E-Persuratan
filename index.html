@@ -1,7 +1,7 @@
 <!-- 
     =============================================
-    E-PERSURATAN GOV SYSTEM (LIVE v4.4)
-    Mode: FIXED URL + Enterprise Features + 1M Data Logic
+    E-PERSURATAN GOV SYSTEM (LIVE v5.0 FINAL)
+    Status: Backend Connected + Drive Permission OK
     Developed by: Angga Conni Saputra
     =============================================
 -->
@@ -71,7 +71,7 @@
                         <i class="fa-solid fa-layer-group text-white text-lg"></i>
                     </div>
                     <div class="flex flex-col">
-                        <span class="font-bold text-lg tracking-tight">E-Persuratan <span class="text-blue-400 font-light">Cloud v4.4</span></span>
+                        <span class="font-bold text-lg tracking-tight">E-Persuratan <span class="text-blue-400 font-light">Cloud v5.0</span></span>
                         <span class="text-[10px] text-gray-400">Develop by - Angga Conni Saputra</span>
                     </div>
                 </div>
@@ -172,7 +172,6 @@
                         <div class="relative">
                             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Jenis Dokumen</label>
                             <select id="inputJenis" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs transition-all"><option value="">...</option></select>
-                            <!-- Custom Input appears when "Lain-lain" is selected -->
                             <div id="customJenisContainer" class="hidden mt-2 bg-blue-50 p-2 rounded border border-blue-200 transition-all">
                                 <label class="block text-[9px] font-bold text-blue-600 uppercase mb-1">Sebutkan Jenis Dokumen:</label>
                                 <input type="text" id="inputCustomJenis" placeholder="Ketik jenis dokumen..." class="w-full p-2 bg-white border border-blue-300 rounded text-xs focus:ring-1 focus:ring-blue-500 outline-none">
@@ -319,8 +318,8 @@
     <div id="calendarModal" class="fixed inset-0 z-50 hidden" onclick="if(event.target === this) toggleCalendarModal()"><div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div><div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-6 w-full max-w-md modal-enter relative z-10"><div class="flex justify-between items-center mb-6 border-b pb-4"><h3 class="text-lg font-bold text-gray-800 flex items-center gap-2"><i class="fa-regular fa-calendar-check text-blue-600"></i> <span id="calModalTitle">Filter Tanggal</span></h3><div class="flex items-center gap-3"><button onclick="clearDateFilter()" class="text-xs text-red-500 hover:text-red-700 font-medium hover:underline"><i class="fa-solid fa-trash mr-1"></i> Reset</button><button onclick="toggleCalendarModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"><i class="fa-solid fa-times text-gray-500"></i></button></div></div><div class="bg-white"><div class="cal-header flex justify-between items-center mb-4"><button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition"><i class="fa-solid fa-chevron-left"></i></button><span id="calMonthYear" class="text-blue-900 font-bold uppercase tracking-wide text-sm">February 2026</span><button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition"><i class="fa-solid fa-chevron-right"></i></button></div><div class="grid grid-cols-7 gap-1 text-center mb-2"><div class="text-xs font-bold text-gray-400">Su</div><div class="text-xs font-bold text-gray-400">Mo</div><div class="text-xs font-bold text-gray-400">Tu</div><div class="text-xs font-bold text-gray-400">We</div><div class="text-xs font-bold text-gray-400">Th</div><div class="text-xs font-bold text-gray-400">Fr</div><div class="text-xs font-bold text-gray-400">Sa</div></div><div id="calendarGrid" class="grid grid-cols-7 gap-2"></div><div class="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400 pt-4 border-t"><span class="w-2 h-2 rounded-full bg-blue-400"></span><span id="calLegend">Ada Arsip</span></div></div></div></div>
 
     <script>
-        // WEB APP URL FINAL (HARDCODED FOR STABILITY)
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCf7cV2GQSLEyH28E856_k0cHbLAdlszlnJrwVnc-Gr0Ko4SFl0hvRXPMZlHbUXlu3/exec"; 
+        // WEB APP URL FINAL
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3IyO3iB6keOaAP4b2kHLx8jZsNoc8g67KH6U5htzOKeNbpNmEFPynJyyojDook-Js/exec"; 
         
         let db_surat = [];
         let currentUser = null; 
@@ -498,7 +497,6 @@
                         document.getElementById('suratForm').reset();
                         document.getElementById('inputTanggal').valueAsDate = new Date();
                         updateJenisOptions();
-                        // Force refresh data after save to see changes immediately
                         loadData(false);
                     } else {
                         showToast(resJson.message, "error");
