@@ -1,7 +1,7 @@
 <!-- 
     =============================================
-    E-PERSURATAN GOV SYSTEM (LIVE v3.7)
-    Mode: Full CRUD + Admin Protected Edit Column
+    E-PERSURATAN GOV SYSTEM (LIVE v4.1 - NEW DEPLOY)
+    Mode: Full CRUD + Upload + Date Sort Filter
     Developed by: Angga Conni Saputra
     =============================================
 -->
@@ -33,18 +33,32 @@
         .status-done { @apply bg-slate-800 text-white border-slate-900; }
         .status-archived { @apply bg-yellow-50 text-yellow-700 border-yellow-100; }
         
+        /* Loading & UI Utils */
         .loading-overlay { @apply absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         .read-only-mode input, .read-only-mode select, .read-only-mode textarea { background-color: #f9fafb; cursor: not-allowed; opacity: 0.7; pointer-events: none; }
         .read-only-mode button[type="submit"], .read-only-mode #inputFile { display: none; }
-        
-        /* Strict Hide for Non-Admin */
         .hidden-in-readonly { display: none !important; }
         
+        /* Animations */
+        .fade-enter { animation: fadeIn 0.3s ease-out; }
         .modal-enter { animation: zoomIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes zoomIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+        
+        /* Toast Notifications */
+        .toast-enter { animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .toast-exit { animation: slideOutRight 0.4s ease-in forwards; }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+
+        /* Calendar Styles */
+        .cal-day { @apply w-10 h-10 flex flex-col items-center justify-center rounded-lg text-sm cursor-pointer hover:bg-blue-50 transition relative font-medium text-gray-600; }
+        .cal-day.active { @apply bg-blue-600 text-white shadow-md hover:bg-blue-700; }
+        .cal-day.has-data::after { content: ''; @apply w-1.5 h-1.5 bg-blue-400 rounded-full absolute bottom-1; }
+        .cal-day.active::after { @apply bg-white; }
     </style>
 </head>
 <body class="text-slate-800 pb-20 relative">
@@ -58,7 +72,7 @@
                         <i class="fa-solid fa-layer-group text-white text-lg"></i>
                     </div>
                     <div class="flex flex-col">
-                        <span class="font-bold text-lg tracking-tight">E-Persuratan <span class="text-blue-400 font-light">Cloud v1.0</span></span>
+                        <span class="font-bold text-lg tracking-tight">E-Persuratan <span class="text-blue-400 font-light">Cloud v4.1</span></span>
                         <span class="text-[10px] text-gray-400">Develop by - Angga Conni Saputra</span>
                     </div>
                 </div>
@@ -77,6 +91,9 @@
         </div>
     </nav>
 
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3"></div>
+
     <!-- MAIN CONTENT -->
     <div class="max-w-[98%] mx-auto px-2 sm:px-4 lg:px-6 py-8 relative">
         
@@ -84,7 +101,7 @@
         <div id="mainLoader" class="loading-overlay hidden fixed top-0 left-0 w-full h-full !bg-black/20">
             <div class="bg-white p-6 rounded-xl shadow-xl flex flex-col items-center">
                 <div class="spinner mb-3"></div>
-                <span class="text-sm font-bold text-gray-700">Sedang Memproses...</span>
+                <span id="loaderText" class="text-sm font-bold text-gray-700">Sinkronisasi Data...</span>
             </div>
         </div>
 
@@ -109,8 +126,6 @@
             <!-- LEFT COLUMN: INPUT FORM -->
             <div class="xl:col-span-1 space-y-6">
                 <div id="inputPanel" class="glass-panel p-6 sticky top-24 read-only-mode relative">
-                    
-                    <!-- Overlay Read Only -->
                     <div id="readOnlyOverlay" class="absolute inset-0 bg-gray-50/60 z-10 flex items-center justify-center backdrop-blur-[1px] rounded-xl border-2 border-dashed border-gray-200">
                         <div class="bg-white p-4 rounded-lg shadow-lg border text-center">
                             <i class="fa-solid fa-lock text-gray-400 text-2xl mb-2"></i>
@@ -134,13 +149,26 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Kategori</label>
-                                <select id="inputKategori" onchange="updateJenisOptions()" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs"><option value="" disabled selected>--</option><option value="Finance">Finance</option><option value="Travel">Travel</option><option value="Admin">Admin</option></select>
+                                <select id="inputKategori" onchange="updateJenisOptions()" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs">
+                                    <option value="" disabled selected>--</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Travel">Travel</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
                             </div>
                         </div>
-                        <div>
+                        
+                        <!-- SMART INPUT JENIS DOKUMEN -->
+                        <div class="relative">
                             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Jenis Dokumen</label>
-                            <select id="inputJenis" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs"><option value="">...</option></select>
+                            <select id="inputJenis" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs transition-all"><option value="">...</option></select>
+                            <div id="customJenisContainer" class="hidden mt-2 bg-blue-50 p-2 rounded border border-blue-200 transition-all">
+                                <label class="block text-[9px] font-bold text-blue-600 uppercase mb-1">Sebutkan Jenis Dokumen:</label>
+                                <input type="text" id="inputCustomJenis" placeholder="Ketik jenis dokumen..." class="w-full p-2 bg-white border border-blue-300 rounded text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                            </div>
                         </div>
+
                         <div class="grid grid-cols-2 gap-3">
                             <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Dari</label><input type="text" id="inputDari" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs"></div>
                             <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Kepada</label><input type="text" id="inputKepada" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs"></div>
@@ -193,6 +221,13 @@
                                 <span class="bg-green-100 text-green-700 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
                                 Arsip Digital
                             </h2>
+                            <!-- CALENDAR WIDGET BUTTON -->
+                            <button onclick="toggleCalendarModal()" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg shadow-sm hover:border-blue-400 hover:text-blue-600 transition text-xs font-medium group active:scale-95">
+                                <div class="bg-blue-50 text-blue-600 w-6 h-6 rounded flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition">
+                                   <i class="fa-regular fa-calendar-check"></i>
+                                </div>
+                                <span id="calWidgetLabel">Filter Tanggal</span>
+                            </button>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="exportExcel()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-2 px-4 rounded shadow flex items-center gap-1"><i class="fa-solid fa-file-excel"></i> XLSX</button>
@@ -200,12 +235,23 @@
                         </div>
                     </div>
 
-                    <!-- FILTERS -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <!-- FILTERS & SORTING -->
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-2 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
                         <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="🔍 Cari..." class="w-full p-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-400">
                         <select id="filterArah" onchange="renderTable()" class="w-full p-2 bg-white border border-gray-300 rounded text-sm"><option value="All">Semua Arah</option><option value="Masuk">Masuk</option><option value="Keluar">Keluar</option></select>
                         <select id="filterStatus" onchange="renderTable()" class="w-full p-2 bg-white border border-gray-300 rounded text-sm"><option value="All">Semua Status</option><option value="Sent">Sent</option><option value="Received">Received</option><option value="Done">Done</option></select>
-                        <select id="filterKategori" onchange="renderTable()" class="w-full p-2 bg-white border border-gray-300 rounded text-sm"><option value="All">Semua Kategori</option><option value="Finance">Finance</option><option value="Travel">Travel</option><option value="Admin">Admin</option></select>
+                        <select id="filterKategori" onchange="renderTable()" class="w-full p-2 bg-white border border-gray-300 rounded text-sm">
+                            <option value="All">Semua Kategori</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Travel">Travel</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                        <!-- SORT FILTER -->
+                        <select id="sortFilter" onchange="renderTable()" class="w-full p-2 bg-white border border-gray-300 rounded text-sm font-semibold text-blue-600">
+                            <option value="newest">📅 Terbaru (Newest)</option>
+                            <option value="oldest">📅 Terlama (Oldest)</option>
+                        </select>
                     </div>
 
                     <!-- TABLE -->
@@ -220,7 +266,7 @@
                                     <th class="px-4 py-3">Jenis</th>
                                     <th class="px-4 py-3 text-center">File</th>
                                     <th class="px-4 py-3 text-center">Status</th>
-                                    <!-- EDIT HEADER: Hidden by default -->
+                                    <!-- EDIT HEADER -->
                                     <th class="px-4 py-3 text-center action-col hidden-in-readonly">Edit</th>
                                 </tr>
                             </thead>
@@ -253,104 +299,70 @@
         </div>
     </div>
 
-    <!-- 1. LOGIN MODAL -->
-    <div id="loginModal" class="fixed inset-0 z-50 hidden bg-slate-900/80 backdrop-blur-sm flex items-center justify-center">
-        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm relative modal-enter">
-            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times"></i></button>
-            <div class="text-center mb-6">
-                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 text-2xl"><i class="fa-solid fa-user-lock"></i></div>
-                <h3 class="text-xl font-bold text-gray-800">Login Administrator</h3>
-                <p class="text-xs text-gray-500 mt-1">Gunakan akun yang terdaftar di Sheet "Users"</p>
-            </div>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <div><label class="text-xs font-bold text-gray-500 uppercase">Username</label><input type="text" id="loginUser" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required></div>
-                <div><label class="text-xs font-bold text-gray-500 uppercase">Password</label><input type="password" id="loginPass" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required></div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition text-sm">Masuk Sistem</button>
-            </form>
-        </div>
-    </div>
+    <!-- MODALS (LOGIN, DETAIL, EDIT, CALENDAR) - Included completely for functionality -->
+    
+    <div id="loginModal" class="fixed inset-0 z-[80] hidden bg-slate-900/80 backdrop-blur-sm flex items-center justify-center fade-enter"><div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm relative modal-enter"><button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times"></i></button><div class="text-center mb-6"><div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 text-2xl"><i class="fa-solid fa-user-lock"></i></div><h3 class="text-xl font-bold text-gray-800">Login Administrator</h3><p class="text-xs text-gray-500 mt-1">Gunakan akun yang terdaftar di Sheet "Users"</p></div><form onsubmit="handleLogin(event)" class="space-y-4"><div><label class="text-xs font-bold text-gray-500 uppercase">Username</label><input type="text" id="loginUser" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required></div><div><label class="text-xs font-bold text-gray-500 uppercase">Password</label><input type="password" id="loginPass" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required></div><button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition text-sm flex justify-center items-center gap-2"><span>Masuk Sistem</span> <i class="fa-solid fa-arrow-right"></i></button></form></div></div>
 
-    <!-- 2. DETAIL & ACTION MODAL -->
-    <div id="viewModal" class="fixed inset-0 z-50 hidden" onclick="if(event.target === this) closeViewModal()">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-0 w-full max-w-2xl modal-enter relative z-10 overflow-hidden">
-            <div class="bg-blue-900 p-5 flex justify-between items-center text-white">
-                <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> Detail Arsip</h3>
-                <button onclick="closeViewModal()" class="hover:bg-blue-800 rounded-full w-8 h-8 flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto" id="viewModalContent">
-                <!-- Content injected by JS -->
-            </div>
-            <!-- FOOTER WITH ACTIONS -->
-            <div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-between items-center" id="viewModalFooter">
-                <!-- Injected by JS based on role -->
-            </div>
-        </div>
-    </div>
+    <div id="viewModal" class="fixed inset-0 z-50 hidden" onclick="if(event.target === this) closeViewModal()"><div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div><div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-0 w-full max-w-2xl modal-enter relative z-10 overflow-hidden"><div class="bg-blue-900 p-5 flex justify-between items-center text-white"><h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> Detail Arsip</h3><button onclick="closeViewModal()" class="hover:bg-blue-800 rounded-full w-8 h-8 flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button></div><div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto" id="viewModalContent"></div><div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-between items-center" id="viewModalFooter"></div></div></div>
 
-    <!-- 3. EDIT FORM MODAL -->
-    <div id="editModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center">
-        <div class="bg-white rounded-xl shadow-2xl p-0 w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col modal-enter">
-            <div class="bg-amber-500 p-4 flex justify-between items-center text-white font-bold">
-                <span><i class="fa-solid fa-pen-to-square mr-2"></i> Revisi Data Cloud</span>
-                <button onclick="closeEditModal()"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <div class="p-6 overflow-y-auto">
-                <form id="editForm" class="space-y-4">
-                    <input type="hidden" id="editId">
-                    <div class="bg-amber-50 text-amber-800 p-3 text-xs rounded border border-amber-200"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Perubahan akan langsung disimpan ke Google Sheets.</div>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <div><label class="text-xs font-bold uppercase text-gray-500">Arah</label><select id="editArah" class="w-full p-2 border rounded text-sm"><option value="Masuk">Masuk</option><option value="Keluar">Keluar</option></select></div>
-                        <div><label class="text-xs font-bold uppercase text-gray-500">Nomor</label><input type="text" id="editNomor" class="w-full p-2 border rounded text-sm"></div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div><label class="text-xs font-bold uppercase text-gray-500">Tanggal</label><input type="date" id="editTanggal" class="w-full p-2 border rounded text-sm"></div>
-                        <div><label class="text-xs font-bold uppercase text-gray-500">Status</label><select id="editStatus" class="w-full p-2 border rounded text-sm"><option value="Draft">Draft</option><option value="Sent">Sent</option><option value="Received">Received</option><option value="Disposisi">Disposisi</option><option value="Done">Done</option></select></div>
-                    </div>
-                    <div><label class="text-xs font-bold uppercase text-gray-500">Perihal</label><textarea id="editPerihal" rows="2" class="w-full p-2 border rounded text-sm"></textarea></div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div><label class="text-xs font-bold uppercase text-gray-500">Dari</label><input type="text" id="editDari" class="w-full p-2 border rounded text-sm"></div>
-                        <div><label class="text-xs font-bold uppercase text-gray-500">Kepada</label><input type="text" id="editKepada" class="w-full p-2 border rounded text-sm"></div>
-                    </div>
-                    <div><label class="text-xs font-bold uppercase text-gray-500">Unit</label><input type="text" id="editUnit" class="w-full p-2 border rounded text-sm"></div>
-                    <div><label class="text-xs font-bold uppercase text-gray-500">Link GDrive (Otomatis/Manual)</label><input type="text" id="editLink" class="w-full p-2 border rounded text-sm text-blue-600"></div>
-                </form>
-            </div>
-            <div class="p-4 bg-gray-50 border-t flex justify-end gap-2">
-                <button onclick="closeEditModal()" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Batal</button>
-                <button onclick="saveEditData()" class="px-4 py-2 text-sm bg-amber-500 text-white rounded font-bold hover:bg-amber-600 shadow">Update Data</button>
-            </div>
-        </div>
-    </div>
+    <div id="editModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center"><div class="bg-white rounded-xl shadow-2xl p-0 w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col modal-enter"><div class="bg-amber-500 p-4 flex justify-between items-center text-white font-bold"><span><i class="fa-solid fa-pen-to-square mr-2"></i> Revisi Data Cloud</span><button onclick="closeEditModal()"><i class="fa-solid fa-times"></i></button></div><div class="p-6 overflow-y-auto"><form id="editForm" class="space-y-4"><input type="hidden" id="editId"><div class="bg-amber-50 text-amber-800 p-3 text-xs rounded border border-amber-200"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Perubahan akan langsung disimpan ke Google Sheets.</div><div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold uppercase text-gray-500">Arah</label><select id="editArah" class="w-full p-2 border rounded text-sm"><option value="Masuk">Masuk</option><option value="Keluar">Keluar</option></select></div><div><label class="text-xs font-bold uppercase text-gray-500">Nomor</label><input type="text" id="editNomor" class="w-full p-2 border rounded text-sm"></div></div><div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold uppercase text-gray-500">Tanggal</label><input type="date" id="editTanggal" class="w-full p-2 border rounded text-sm"></div><div><label class="text-xs font-bold uppercase text-gray-500">Status</label><select id="editStatus" class="w-full p-2 border rounded text-sm"><option value="Draft">Draft</option><option value="Sent">Sent</option><option value="Received">Received</option><option value="Disposisi">Disposisi</option><option value="Done">Done</option></select></div></div><div><label class="text-xs font-bold uppercase text-gray-500">Perihal</label><textarea id="editPerihal" rows="2" class="w-full p-2 border rounded text-sm"></textarea></div><div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold uppercase text-gray-500">Dari</label><input type="text" id="editDari" class="w-full p-2 border rounded text-sm"></div><div><label class="text-xs font-bold uppercase text-gray-500">Kepada</label><input type="text" id="editKepada" class="w-full p-2 border rounded text-sm"></div></div><div><label class="text-xs font-bold uppercase text-gray-500">Unit</label><input type="text" id="editUnit" class="w-full p-2 border rounded text-sm"></div><div><label class="text-xs font-bold uppercase text-gray-500">Link GDrive (Otomatis/Manual)</label><input type="text" id="editLink" class="w-full p-2 border rounded text-sm text-blue-600"></div></form></div><div class="p-4 bg-gray-50 border-t flex justify-end gap-2"><button onclick="closeEditModal()" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Batal</button><button onclick="saveEditData()" class="px-4 py-2 text-sm bg-amber-500 text-white rounded font-bold hover:bg-amber-600 shadow">Update Data</button></div></div></div>
+
+    <div id="calendarModal" class="fixed inset-0 z-50 hidden" onclick="if(event.target === this) toggleCalendarModal()"><div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div><div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-6 w-full max-w-md modal-enter relative z-10"><div class="flex justify-between items-center mb-6 border-b pb-4"><h3 class="text-lg font-bold text-gray-800 flex items-center gap-2"><i class="fa-regular fa-calendar-check text-blue-600"></i> <span id="calModalTitle">Filter Tanggal</span></h3><div class="flex items-center gap-3"><button onclick="clearDateFilter()" class="text-xs text-red-500 hover:text-red-700 font-medium hover:underline"><i class="fa-solid fa-trash mr-1"></i> Reset</button><button onclick="toggleCalendarModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"><i class="fa-solid fa-times text-gray-500"></i></button></div></div><div class="bg-white"><div class="cal-header flex justify-between items-center mb-4"><button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition"><i class="fa-solid fa-chevron-left"></i></button><span id="calMonthYear" class="text-blue-900 font-bold uppercase tracking-wide text-sm">February 2026</span><button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition"><i class="fa-solid fa-chevron-right"></i></button></div><div class="grid grid-cols-7 gap-1 text-center mb-2"><div class="text-xs font-bold text-gray-400">Su</div><div class="text-xs font-bold text-gray-400">Mo</div><div class="text-xs font-bold text-gray-400">Tu</div><div class="text-xs font-bold text-gray-400">We</div><div class="text-xs font-bold text-gray-400">Th</div><div class="text-xs font-bold text-gray-400">Fr</div><div class="text-xs font-bold text-gray-400">Sa</div></div><div id="calendarGrid" class="grid grid-cols-7 gap-2"></div><div class="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400 pt-4 border-t"><span class="w-2 h-2 rounded-full bg-blue-400"></span><span id="calLegend">Ada Arsip</span></div></div></div></div>
 
     <script>
-        // ==========================================
-        // URL WEB APP FINAL ANDA
-        // ==========================================
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwBHxv96xHU4or8wYtS84bJ8jGL5bn4LJNNvvvGZSfoEuCl2IUwVmLdZciBnJhRYhPX/exec"; 
+        // WEB APP URL FINAL (NEW DEPLOYMENT)
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCf7cV2GQSLEyH28E856_k0cHbLAdlszlnJrwVnc-Gr0Ko4SFl0hvRXPMZlHbUXlu3/exec"; 
         
         let db_surat = [];
         let currentUser = null; 
         let currentPage = 1;
         let rowsPerPage = 20;
+        let calDate = new Date();
+        let activeFilterDate = null;
 
-        // --- INIT ---
+        const DOC_CONFIG = {
+            'Finance': ['Payment Request', 'Invoice', 'Petty Cash', 'Purchase Request'],
+            'Travel': ['Visa Support', 'Surat Tugas', 'Airport Handling', 'Note Verbale'],
+            'Admin': ['SK', 'Undangan', 'Nota Dinas', 'Berita Acara'],
+            'Lainnya': ['Surat Umum', 'Memo Internal', 'Lain-lain']
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('inputTanggal').valueAsDate = new Date();
             loadData();
+            updateJenisOptions();
+            document.getElementById('inputJenis').addEventListener('change', checkCustomJenis);
         });
 
-        // --- AUTH SYSTEM ---
+        // --- UTILS & TOAST ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            let bgClass = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+            let icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            toast.className = `${bgClass} text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 text-sm font-medium toast-enter min-w-[250px]`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('toast-enter'); toast.classList.add('toast-exit');
+                toast.addEventListener('animationend', () => toast.remove());
+            }, 3000);
+        }
+
+        function showLoader(show, text="Loading...") { 
+            const l = document.getElementById('mainLoader'); 
+            const t = document.getElementById('loaderText');
+            if(t) t.innerText = text;
+            if(show) l.classList.remove('hidden'); else l.classList.add('hidden'); 
+        }
+
+        // --- AUTH ---
         function handleAuthClick() {
             if(currentUser) {
                 if(confirm("Yakin ingin logout?")) {
-                    currentUser = null;
-                    updateUIForAuth();
+                    currentUser = null; updateUIForAuth(); showToast("Berhasil Logout", "success");
                 }
-            } else {
-                openLoginModal();
-            }
+            } else { openLoginModal(); }
         }
 
         function updateUIForAuth() {
@@ -358,86 +370,58 @@
             const role = document.getElementById('userRoleDisplay');
             const panel = document.getElementById('inputPanel');
             const overlay = document.getElementById('readOnlyOverlay');
-            
-            // Toggle Action Columns
             const actionCols = document.querySelectorAll('.action-col');
 
             if (currentUser) {
-                // Admin Mode
                 btn.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> Logout';
                 btn.className = "bg-red-600 hover:bg-red-500 px-4 py-2 rounded text-xs font-bold transition flex items-center gap-2";
                 role.innerHTML = `Admin: ${currentUser.name}`;
                 role.className = "text-sm font-semibold text-green-400";
-                
                 panel.classList.remove('read-only-mode');
                 overlay.classList.add('hidden');
-                
-                // Show Edit Columns
                 actionCols.forEach(el => el.classList.remove('hidden-in-readonly'));
             } else {
-                // Guest Mode
                 btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Login Admin';
                 btn.className = "bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded text-xs font-bold transition flex items-center gap-2";
                 role.innerHTML = "Read Only (Guest)";
                 role.className = "text-sm font-semibold text-yellow-400";
-                
                 panel.classList.add('read-only-mode');
                 overlay.classList.remove('hidden');
-                
-                // Hide Edit Columns
                 actionCols.forEach(el => el.classList.add('hidden-in-readonly'));
             }
         }
 
-        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
-        function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
+        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); document.getElementById('loginModal').classList.add('fade-enter'); }
+        function closeLoginModal() { document.getElementById('loginModal').classList.remove('fade-enter'); document.getElementById('loginModal').classList.add('hidden'); }
 
         async function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('loginUser').value;
             const p = document.getElementById('loginPass').value;
-            
-            showLoader(true);
+            showLoader(true, "Memverifikasi...");
             try {
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?op=login&user=${encodeURIComponent(u)}&pass=${encodeURIComponent(p)}`);
                 const result = await response.json();
-                
                 if(result.status === 'success') {
                     currentUser = { name: result.name, role: 'admin' };
-                    updateUIForAuth();
-                    closeLoginModal();
-                    alert(`Selamat datang, ${result.name}!`);
-                } else {
-                    alert("Login Gagal: " + result.message);
-                }
-            } catch (err) {
-                alert("Koneksi Error. Cek URL Script.");
-            } finally {
-                showLoader(false);
-            }
+                    updateUIForAuth(); closeLoginModal(); showToast(`Selamat datang, ${result.name}!`);
+                } else { showToast(result.message || "Login Gagal", "error"); }
+            } catch (err) { showToast("Gagal Login. Cek Koneksi.", "error"); } finally { showLoader(false); }
         }
 
-        // --- DATA OPERATIONS (CRUD) ---
-
+        // --- DATA CRUD ---
         async function loadData() {
-            showLoader(true);
+            showLoader(true, "Memuat Data...");
             try {
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?op=read`);
                 const result = await response.json();
                 if(result.status === 'success') {
                     db_surat = result.data;
-                    renderTable();
-                    renderChart();
+                    renderTable(); renderChart(); renderCalendar();
                 }
-            } catch (error) {
-                console.error(error);
-                document.querySelector('#emptyState h3').innerText = "Gagal memuat data (Cek Koneksi)";
-            } finally {
-                showLoader(false);
-            }
+            } catch (error) { console.error(error); } finally { showLoader(false); }
         }
 
-        // --- HELPERS UPLOAD FILE ---
         const toBase64 = file => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -449,22 +433,19 @@
             e.preventDefault();
             if(!currentUser) return;
 
-            // Baca file jika ada
             const fileInput = document.getElementById('inputFile');
             let filePayload = {};
-            
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                if (file.size > 5 * 1024 * 1024) {
-                    alert("File terlalu besar (Max 5MB)");
-                    return;
-                }
+                if (file.size > 5 * 1024 * 1024) { showToast("File Max 5MB", "error"); return; }
                 const base64 = await toBase64(file);
-                filePayload = {
-                    fileData: base64,
-                    fileName: file.name,
-                    mimeType: file.type
-                };
+                filePayload = { fileData: base64, fileName: file.name, mimeType: file.type };
+            }
+
+            let jenisDoc = document.getElementById('inputJenis').value;
+            if(jenisDoc === 'Lain-lain') {
+                const customVal = document.getElementById('inputCustomJenis').value;
+                if(customVal.trim() !== "") jenisDoc = customVal;
             }
 
             const data = {
@@ -474,223 +455,67 @@
                 dari: document.getElementById('inputDari').value,
                 kepada: document.getElementById('inputKepada').value,
                 perihal: document.getElementById('inputPerihal').value,
-                jenis: document.getElementById('inputKategori').value,
+                jenis: jenisDoc,
                 status: document.getElementById('inputStatus').value,
                 unit: document.getElementById('inputUnit').value,
-                // Combine with file data
                 ...filePayload
             };
 
-            showLoader(true);
+            showLoader(true, "Menyimpan & Upload...");
             try {
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ op: 'create', data: data })
-                });
-                alert("✅ Data & File Tersimpan!");
+                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ op: 'create', data: data }) });
+                showToast("Data Berhasil Disimpan!");
                 document.getElementById('suratForm').reset();
                 document.getElementById('inputTanggal').valueAsDate = new Date();
+                updateJenisOptions();
                 loadData();
-            } catch(err) {
-                alert("Gagal menyimpan: " + err);
-            } finally {
-                showLoader(false);
-            }
+            } catch(err) { showToast("Gagal menyimpan", "error"); } finally { showLoader(false); }
         }
 
-        // --- VIEW DETAIL & ACTIONS ---
-        function openViewModal(id) {
-            const item = db_surat.find(s => s.id === id);
-            if(!item) return;
-            const content = document.getElementById('viewModalContent');
-            const footer = document.getElementById('viewModalFooter');
-            
-            const fileStatus = item.hasFile 
-                ? `<a href="${item.gdriveLink}" target="_blank" class="text-blue-600 font-bold underline flex items-center gap-1"><i class="fa-brands fa-google-drive"></i> Buka GDrive</a>` 
-                : `<span class="text-gray-400 italic">Tidak ada lampiran</span>`;
-            
-            content.innerHTML = `
-                <div class="grid grid-cols-3 gap-4 text-sm">
-                    <div class="text-gray-500 font-medium">1. Arah Surat</div><div class="col-span-2 font-bold">${item.arah}</div>
-                    <div class="text-gray-500 font-medium">2. Nomor Surat</div><div class="col-span-2 font-bold text-blue-800 font-mono">${item.nomor}</div>
-                    <div class="text-gray-500 font-medium">3. Tanggal Surat</div><div class="col-span-2 font-mono">${item.tanggal}</div>
-                    <div class="text-gray-500 font-medium">4. Dari</div><div class="col-span-2 font-semibold">${item.dari}</div>
-                    <div class="text-gray-500 font-medium">5. Kepada</div><div class="col-span-2 font-semibold">${item.kepada}</div>
-                    <div class="text-gray-500 font-medium">6. Perihal</div><div class="col-span-2 p-2 bg-gray-50 rounded border text-gray-700">${item.perihal}</div>
-                    <div class="text-gray-500 font-medium">7. Jenis Surat</div><div class="col-span-2">${item.jenis}</div>
-                    <div class="text-gray-500 font-medium">8. Status</div><div class="col-span-2"><span class="px-2 py-1 rounded bg-blue-100 text-blue-800 text-xs font-bold">${item.status}</span></div>
-                    <div class="text-gray-500 font-medium">9. Unit Pengelola</div><div class="col-span-2">${item.unit}</div>
-                    <div class="text-gray-500 font-medium">10. Link GDrive</div><div class="col-span-2">${fileStatus}</div>
-                </div>
-            `;
-
-            // FOOTER ACTIONS (Only for Admin)
-            if (currentUser) {
-                footer.innerHTML = `
-                    <div>
-                        <button onclick="handleDelete(${item.id})" class="text-red-500 hover:text-red-700 font-bold px-3 py-2 rounded text-sm transition border border-red-200 hover:bg-red-50">
-                            Delete
-                        </button>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="openEditModal(${item.id}); closeViewModal()" class="text-blue-600 hover:text-blue-800 font-bold px-3 py-2 text-sm transition border border-blue-200 hover:bg-blue-50">
-                            Revisi Data
-                        </button>
-                        <button onclick="closeViewModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm font-semibold transition">
-                            Tutup
-                        </button>
-                    </div>
-                `;
-            } else {
-                // Guest View
-                footer.innerHTML = `
-                    <div></div>
-                    <button onclick="closeViewModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm font-semibold transition">
-                        Tutup
-                    </button>
-                `;
-            }
-
-            document.getElementById('viewModal').classList.remove('hidden');
-        }
-        function closeViewModal() { document.getElementById('viewModal').classList.add('hidden'); }
-
-        // --- DELETE LOGIC ---
-        async function handleDelete(id) {
-            if (!confirm("⚠️ PERINGATAN!\n\nApakah Anda yakin ingin menghapus data ini secara permanen dari Google Sheets?")) return;
-
-            showLoader(true);
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ op: 'delete', data: { id: id } })
-                });
-                alert("Data telah dihapus.");
-                closeViewModal();
-                loadData();
-            } catch (err) {
-                alert("Gagal menghapus: " + err);
-            } finally {
-                showLoader(false);
-            }
-        }
-
-        // --- EDIT LOGIC ---
-        function openEditModal(id) {
-            const item = db_surat.find(s => s.id === id);
-            if(!item) return;
-            
-            document.getElementById('editId').value = item.id;
-            document.getElementById('editNomor').value = item.nomor;
-            document.getElementById('editTanggal').value = convertDateToInput(item.tanggal);
-            document.getElementById('editArah').value = item.arah;
-            document.getElementById('editPerihal').value = item.perihal;
-            document.getElementById('editDari').value = item.dari;
-            document.getElementById('editKepada').value = item.kepada;
-            document.getElementById('editStatus').value = item.status;
-            document.getElementById('editUnit').value = item.unit;
-            document.getElementById('editLink').value = item.gdriveLink;
-            
-            document.getElementById('editModal').classList.remove('hidden');
-        }
-
-        async function saveEditData() {
-            const data = {
-                id: document.getElementById('editId').value,
-                arah: document.getElementById('editArah').value,
-                nomor: document.getElementById('editNomor').value,
-                tanggal: document.getElementById('editTanggal').value,
-                dari: document.getElementById('editDari').value,
-                kepada: document.getElementById('editKepada').value,
-                perihal: document.getElementById('editPerihal').value,
-                status: document.getElementById('editStatus').value,
-                unit: document.getElementById('editUnit').value,
-                gdriveLink: document.getElementById('editLink').value,
-                jenis: 'Updated' 
-            };
-
-            showLoader(true);
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ op: 'update', data: data })
-                });
-                alert("✅ Data berhasil direvisi.");
-                closeEditModal();
-                loadData();
-            } catch(err) {
-                alert("Update Gagal: " + err);
-            } finally {
-                showLoader(false);
-            }
-        }
-
-        function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
-
-        // --- HELPERS ---
-        function showLoader(show) {
-            const l = document.getElementById('mainLoader');
-            if(show) l.classList.remove('hidden'); else l.classList.add('hidden');
-        }
-
-        function convertDateToInput(dateStr) {
-            if(!dateStr) return "";
-            const p = dateStr.split('/');
-            if(p.length === 3) return `${p[2]}-${p[1]}-${p[0]}`;
-            return "";
-        }
-
-        function changeRowsPerPage() { rowsPerPage = parseInt(document.getElementById('rowsPerPage').value); currentPage = 1; renderTable(); }
-        function changePage(delta) { currentPage += delta; renderTable(); }
-        
-        function updateJenisOptions() { 
-            const cat = document.getElementById('inputKategori').value;
-            const sub = document.getElementById('inputJenis');
-            sub.innerHTML = "";
-            const opts = {
-                'Finance': ['Payment Request', 'Invoice', 'Petty Cash'],
-                'Travel': ['Visa Support', 'Surat Tugas', 'Airport Handling'],
-                'Admin': ['SK', 'Undangan', 'Nota Dinas', 'Berita Acara']
-            };
-            if(opts[cat]) opts[cat].forEach(o => {
-                const opt = document.createElement('option');
-                opt.value = o; opt.innerText = o;
-                sub.appendChild(opt);
-            });
-            sub.disabled = false;
-        }
-
+        // --- SORT & RENDER ---
         function renderTable() {
             const tbody = document.getElementById('dataTableBody');
             const searchVal = document.getElementById('searchInput').value.toLowerCase();
             const filterArah = document.getElementById('filterArah').value;
             const filterStatus = document.getElementById('filterStatus').value;
             const filterKategori = document.getElementById('filterKategori').value;
+            const sortOrder = document.getElementById('sortFilter').value; 
 
             tbody.innerHTML = '';
-            
-            const filtered = db_surat.filter(item => {
-                const matchSearch = (item.nomor || "").toLowerCase().includes(searchVal) || 
-                                    (item.perihal || "").toLowerCase().includes(searchVal);
+            let filtered = db_surat.filter(item => {
+                const matchSearch = (item.nomor || "").toLowerCase().includes(searchVal) || (item.perihal || "").toLowerCase().includes(searchVal);
                 const matchArah = filterArah === 'All' || item.arah === filterArah;
                 const matchStatus = filterStatus === 'All' || item.status === filterStatus;
-                return matchSearch && matchArah && matchStatus;
+                
+                let matchCat = filterKategori === 'All';
+                if(!matchCat) {
+                    if(DOC_CONFIG[filterKategori] && DOC_CONFIG[filterKategori].includes(item.jenis)) matchCat = true;
+                    if(filterKategori === 'Lainnya' && !Object.values(DOC_CONFIG).flat().includes(item.jenis)) matchCat = true; 
+                }
+                
+                const matchDate = !activeFilterDate || item.tanggal === activeFilterDate;
+                return matchSearch && matchArah && matchStatus && matchDate && matchCat;
+            });
+
+            // SORT LOGIC
+            filtered.sort((a, b) => {
+                const dateA = new Date(a.tanggal.split('/').reverse().join('-'));
+                const dateB = new Date(b.tanggal.split('/').reverse().join('-'));
+                if (sortOrder === 'newest') return dateB - dateA;
+                return dateA - dateB;
             });
 
             const total = filtered.length;
             if (currentPage < 1) currentPage = 1;
             const maxPage = Math.ceil(total / rowsPerPage) || 1;
             if (currentPage > maxPage) currentPage = maxPage;
-
             const start = (currentPage - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            const paginated = filtered.slice(start, end);
+            const paginated = filtered.slice(start, start + rowsPerPage);
 
-            // Update Stats
             document.getElementById('stat-total').innerText = db_surat.length;
             document.getElementById('stat-in').innerText = db_surat.filter(s=>s.arah==='Masuk').length;
             document.getElementById('stat-out').innerText = db_surat.filter(s=>s.arah==='Keluar').length;
-            document.getElementById('paginationInfo').innerText = `Showing ${Math.min(start+1, total)}-${Math.min(end, total)} of ${total}`;
+            document.getElementById('paginationInfo').innerText = `Showing ${Math.min(start+1, total)}-${Math.min(start + paginated.length, total)} of ${total}`;
             document.getElementById('btnPrev').disabled = currentPage === 1;
             document.getElementById('btnNext').disabled = currentPage >= maxPage;
 
@@ -710,21 +535,15 @@
                     const iconArah = row.arah === 'Masuk' 
                         ? '<i class="fa-solid fa-arrow-down text-yellow-500 bg-yellow-100 p-1.5 rounded-full"></i>' 
                         : '<i class="fa-solid fa-arrow-up text-blue-500 bg-blue-100 p-1.5 rounded-full"></i>';
-                    
                     const linkIcon = row.hasFile 
-                        ? `<a href="${row.gdriveLink}" target="_blank" class="text-blue-600 hover:text-blue-800" title="Buka File" onclick="event.stopPropagation()"><i class="fa-brands fa-google-drive text-lg"></i></a>` 
+                        ? `<a href="${row.gdriveLink}" target="_blank" class="text-blue-600 hover:text-blue-800" onclick="event.stopPropagation()"><i class="fa-brands fa-google-drive text-lg"></i></a>` 
                         : '<span class="text-gray-300">-</span>';
-
-                    // Tombol edit (conditionally shown via class logic in UpdateUIForAuth)
                     const editBtn = `<button onclick="event.stopPropagation(); openEditModal(${row.id})" class="text-amber-500 hover:text-amber-700 transition"><i class="fa-solid fa-pen-to-square"></i></button>`;
+                    const hiddenClass = currentUser ? '' : 'hidden-in-readonly';
 
                     const tr = document.createElement('tr');
                     tr.className = "bg-white border-b hover:bg-gray-50 cursor-pointer transition";
                     tr.onclick = () => openViewModal(row.id);
-
-                    // Add hidden-in-readonly class conditionally
-                    const hiddenClass = currentUser ? '' : 'hidden-in-readonly';
-
                     tr.innerHTML = `
                         <td class="px-4 py-3 text-center">${iconArah}</td>
                         <td class="px-4 py-3 font-mono text-xs text-blue-700 font-bold hover:underline">${row.nomor}</td>
@@ -740,40 +559,151 @@
             }
         }
 
-        // --- CHART (SIMPLE) ---
+        // --- CALENDAR & OTHER UTILS (Identical to previous) ---
+        function toggleCalendarModal() { const m = document.getElementById('calendarModal'); if(m.classList.contains('hidden')) { m.classList.remove('hidden'); renderCalendar(); } else { m.classList.add('hidden'); } }
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const monthYearLabel = document.getElementById('calMonthYear');
+            grid.innerHTML = "";
+            const year = calDate.getFullYear(); const month = calDate.getMonth();
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            monthYearLabel.innerText = `${monthNames[month]} ${year}`;
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
+            for(let d=1; d<=daysInMonth; d++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const cell = document.createElement('div');
+                cell.className = 'cal-day'; cell.innerText = d;
+                if(db_surat.some(s => s.tanggal === dateStr)) cell.classList.add('has-data');
+                if(activeFilterDate === dateStr) cell.classList.add('active');
+                cell.onclick = () => { 
+                    activeFilterDate = dateStr; toggleCalendarModal(); renderTable(); 
+                    document.getElementById('calWidgetLabel').innerText = `${d}/${month+1}`;
+                    document.getElementById('calWidgetLabel').className = "text-blue-600 font-bold";
+                };
+                grid.appendChild(cell);
+            }
+        }
+        function changeMonth(delta) { calDate.setMonth(calDate.getMonth() + delta); renderCalendar(); }
+        function clearDateFilter() { activeFilterDate = null; renderTable(); toggleCalendarModal(); document.getElementById('calWidgetLabel').innerText = "Filter Tanggal"; document.getElementById('calWidgetLabel').className = ""; }
+
         function renderChart() {
             const ctx = document.getElementById('trafficChart').getContext('2d');
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']; 
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: months,
-                    datasets: [
-                        { label: 'Masuk', data: [5, 8, 3, 12, 6, 9], borderColor: '#EAB308', tension: 0.4 },
-                        { label: 'Keluar', data: [2, 15, 7, 5, 10, 4], borderColor: '#1F2937', tension: 0.4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
+            if(window.myChart) window.myChart.destroy();
+            window.myChart = new Chart(ctx, { type: 'line', data: { labels: months, datasets: [{ label: 'Masuk', data: [5, 8, 3, 12, 6, 9], borderColor: '#EAB308', tension: 0.4 }, { label: 'Keluar', data: [2, 15, 7, 5, 10, 4], borderColor: '#1F2937', tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false } });
         }
 
-        function exportExcel() {
-            const ws = XLSX.utils.json_to_sheet(db_surat);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Arsip");
-            XLSX.writeFile(wb, "Data_Arsip.xlsx");
+        // VIEW & EDIT & DELETE (Logic same as previous)
+        function openViewModal(id) {
+            const item = db_surat.find(s => s.id === id); if(!item) return;
+            const content = document.getElementById('viewModalContent');
+            const footer = document.getElementById('viewModalFooter');
+            const fileStatus = item.hasFile ? `<a href="${item.gdriveLink}" target="_blank" class="text-blue-600 font-bold underline flex items-center gap-1"><i class="fa-brands fa-google-drive"></i> Buka GDrive</a>` : `<span class="text-gray-400 italic">Tidak ada lampiran</span>`;
+            
+            content.innerHTML = `
+                <div class="grid grid-cols-3 gap-4 text-sm">
+                    <div class="text-gray-500 font-medium">1. Arah Surat</div><div class="col-span-2 font-bold">${item.arah}</div>
+                    <div class="text-gray-500 font-medium">2. Nomor Surat</div><div class="col-span-2 font-bold text-blue-800 font-mono">${item.nomor}</div>
+                    <div class="text-gray-500 font-medium">3. Tanggal Surat</div><div class="col-span-2 font-mono">${item.tanggal}</div>
+                    <div class="text-gray-500 font-medium">4. Dari</div><div class="col-span-2 font-semibold">${item.dari}</div>
+                    <div class="text-gray-500 font-medium">5. Kepada</div><div class="col-span-2 font-semibold">${item.kepada}</div>
+                    <div class="text-gray-500 font-medium">6. Perihal</div><div class="col-span-2 p-2 bg-gray-50 rounded border text-gray-700">${item.perihal}</div>
+                    <div class="text-gray-500 font-medium">7. Jenis Surat</div><div class="col-span-2">${item.jenis}</div>
+                    <div class="text-gray-500 font-medium">8. Status</div><div class="col-span-2"><span class="px-2 py-1 rounded bg-blue-100 text-blue-800 text-xs font-bold">${item.status}</span></div>
+                    <div class="text-gray-500 font-medium">9. Unit Pengelola</div><div class="col-span-2">${item.unit}</div>
+                    <div class="text-gray-500 font-medium">10. Link GDrive</div><div class="col-span-2">${fileStatus}</div>
+                </div>`;
+
+            if (currentUser) {
+                footer.innerHTML = `<button onclick="handleDelete(${item.id})" class="text-red-500 hover:text-red-700 font-bold px-3 py-2 text-sm border border-red-200 hover:bg-red-50 rounded">Delete</button><div class="flex gap-2"><button onclick="openEditModal(${item.id}); closeViewModal()" class="text-blue-600 hover:text-blue-800 font-bold px-3 py-2 text-sm border border-blue-200 hover:bg-blue-50 rounded">Revisi Data</button><button onclick="closeViewModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm font-semibold">Tutup</button></div>`;
+            } else { footer.innerHTML = `<div></div><button onclick="closeViewModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm font-semibold">Tutup</button>`; }
+            document.getElementById('viewModal').classList.remove('hidden');
         }
-        function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l');
-            doc.text("Laporan Arsip Surat", 14, 15);
-            doc.autoTable({
-                head: [['Arah','Nomor','Tanggal','Dari','Kepada','Perihal','Status']],
-                body: db_surat.map(r => [r.arah, r.nomor, r.tanggal, r.dari, r.kepada, r.perihal, r.status]),
-                startY: 20, styles: { fontSize: 8 }
+        function closeViewModal() { document.getElementById('viewModal').classList.add('hidden'); }
+
+        async function handleDelete(id) {
+            if (!confirm("Hapus data permanen?")) return;
+            showLoader(true, "Menghapus...");
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ op: 'delete', data: { id: id } }) });
+                showToast("Data Dihapus!"); closeViewModal(); loadData();
+            } catch (err) { showToast("Gagal Hapus", "error"); } finally { showLoader(false); }
+        }
+
+        function openEditModal(id) {
+            const item = db_surat.find(s => s.id === id); if(!item) return;
+            document.getElementById('editId').value = item.id;
+            document.getElementById('editNomor').value = item.nomor;
+            // Handle date format dd/mm/yyyy to yyyy-mm-dd
+            let dateVal = "";
+            if (item.tanggal && item.tanggal.includes('/')) {
+                const parts = item.tanggal.split('/');
+                if (parts.length === 3) dateVal = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            document.getElementById('editTanggal').value = dateVal;
+            document.getElementById('editArah').value = item.arah;
+            document.getElementById('editPerihal').value = item.perihal;
+            document.getElementById('editDari').value = item.dari;
+            document.getElementById('editKepada').value = item.kepada;
+            document.getElementById('editStatus').value = item.status;
+            document.getElementById('editUnit').value = item.unit;
+            document.getElementById('editLink').value = item.gdriveLink;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        async function saveEditData() {
+            const data = {
+                id: document.getElementById('editId').value,
+                arah: document.getElementById('editArah').value,
+                nomor: document.getElementById('editNomor').value,
+                tanggal: document.getElementById('editTanggal').value,
+                dari: document.getElementById('editDari').value,
+                kepada: document.getElementById('editKepada').value,
+                perihal: document.getElementById('editPerihal').value,
+                status: document.getElementById('editStatus').value,
+                unit: document.getElementById('editUnit').value,
+                gdriveLink: document.getElementById('editLink').value,
+                jenis: 'Updated' 
+            };
+            showLoader(true, "Menyimpan Perubahan...");
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ op: 'update', data: data }) });
+                showToast("Data Direvisi!"); closeEditModal(); loadData();
+            } catch(err) { showToast("Gagal Update", "error"); } finally { showLoader(false); }
+        }
+        function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
+
+        function changeRowsPerPage() { rowsPerPage = parseInt(document.getElementById('rowsPerPage').value); currentPage = 1; renderTable(); }
+        function changePage(delta) { currentPage += delta; renderTable(); }
+        
+        function updateJenisOptions() { 
+            const cat = document.getElementById('inputKategori').value;
+            const sub = document.getElementById('inputJenis');
+            sub.innerHTML = "";
+            if(DOC_CONFIG[cat]) DOC_CONFIG[cat].forEach(o => {
+                const opt = document.createElement('option');
+                opt.value = o; opt.innerText = o;
+                sub.appendChild(opt);
             });
-            doc.save("Laporan_Arsip.pdf");
+            sub.disabled = false;
+            checkCustomJenis();
         }
+        function checkCustomJenis() {
+            const val = document.getElementById('inputJenis').value;
+            const customInputDiv = document.getElementById('customJenisContainer');
+            if(val === 'Lain-lain') {
+                customInputDiv.classList.remove('hidden');
+                document.getElementById('inputCustomJenis').required = true;
+            } else {
+                customInputDiv.classList.add('hidden');
+                document.getElementById('inputCustomJenis').required = false;
+            }
+        }
+
+        function exportExcel() { const ws = XLSX.utils.json_to_sheet(db_surat); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Arsip"); XLSX.writeFile(wb, "Data_Arsip.xlsx"); }
+        function exportPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF('l'); doc.text("Laporan Arsip Surat", 14, 15); doc.autoTable({ head: [['Arah','Nomor','Tanggal','Dari','Kepada','Perihal','Status']], body: db_surat.map(r => [r.arah, r.nomor, r.tanggal, r.dari, r.kepada, r.perihal, r.status]), startY: 20, styles: { fontSize: 8 } }); doc.save("Laporan_Arsip.pdf"); }
     </script>
 </body>
 </html>
