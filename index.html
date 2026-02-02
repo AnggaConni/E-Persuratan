@@ -1,7 +1,8 @@
 <!-- 
     =============================================
-    E-PERSURATAN GOV SYSTEM (LIVE v5.0 FINAL)
-    Status: Backend Connected + Drive Permission OK
+    E-PERSURATAN GOV SYSTEM (LIVE v5.2)
+    Status: PRODUCTION READY 🚀
+    Backend: Connected & Authorized
     Developed by: Angga Conni Saputra
     =============================================
 -->
@@ -71,7 +72,7 @@
                         <i class="fa-solid fa-layer-group text-white text-lg"></i>
                     </div>
                     <div class="flex flex-col">
-                        <span class="font-bold text-lg tracking-tight">E-Persuratan <span class="text-blue-400 font-light">Cloud v5.0</span></span>
+                        <span class="font-bold text-lg tracking-tight">E-Persuratan <span class="text-blue-400 font-light">Cloud v5.2</span></span>
                         <span class="text-[10px] text-gray-400">Develop by - Angga Conni Saputra</span>
                     </div>
                 </div>
@@ -275,6 +276,7 @@
                                     <th class="px-4 py-3">Jenis</th>
                                     <th class="px-4 py-3 text-center">File</th>
                                     <th class="px-4 py-3 text-center">Status</th>
+                                    <!-- EDIT HEADER -->
                                     <th class="px-4 py-3 text-center action-col hidden-in-readonly">Edit</th>
                                 </tr>
                             </thead>
@@ -319,7 +321,7 @@
 
     <script>
         // WEB APP URL FINAL
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3IyO3iB6keOaAP4b2kHLx8jZsNoc8g67KH6U5htzOKeNbpNmEFPynJyyojDook-Js/exec"; 
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbWSHzMtJ9_nst8EeN2671IzdY_craNh_DPToYsJCcAT8I6Ak-4Q2aeyczqkiFZMga/exec"; 
         
         let db_surat = [];
         let currentUser = null; 
@@ -429,7 +431,6 @@
         async function loadData(forceRefresh = false) {
             showLoader(true, forceRefresh ? "Refreshing Data..." : "Memuat Data...");
             try {
-                // Add timestamp to prevent caching
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?op=read&t=${Date.now()}`);
                 const result = await response.json();
                 if(result.status === 'success') {
@@ -460,7 +461,6 @@
                 const file = fileInput.files[0];
                 if (file.size > 5 * 1024 * 1024) { showToast("File Max 5MB", "error"); return; }
                 const base64 = await toBase64(file);
-                // Ensure base64 string is complete
                 filePayload = { fileData: base64, fileName: file.name, mimeType: file.type };
             }
 
@@ -536,7 +536,6 @@
                 return matchSearch && matchArah && matchStatus && matchDate && matchCat;
             });
 
-            // SORT LOGIC
             filtered.sort((a, b) => {
                 const dateA = new Date(a.tanggal.split('/').reverse().join('-'));
                 const dateB = new Date(b.tanggal.split('/').reverse().join('-'));
@@ -551,7 +550,6 @@
             const start = (currentPage - 1) * rowsPerPage;
             const paginated = filtered.slice(start, start + rowsPerPage);
 
-            // STATS UPDATE WITH FORMATTER
             document.getElementById('stat-total').innerText = formatBigNumber(db_surat.length);
             document.getElementById('stat-in').innerText = formatBigNumber(db_surat.filter(s=>s.arah==='Masuk').length);
             document.getElementById('stat-out').innerText = formatBigNumber(db_surat.filter(s=>s.arah==='Keluar').length);
