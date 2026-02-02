@@ -1,8 +1,8 @@
 <!-- 
     =============================================
     E-PERSURATAN GOV SYSTEM (LIVE v5.6)
-    Status: PRODUCTION READY 🚀
-    Backend: URL Updated to Latest Deployment
+    Status: PRODUCTION READY + BILINGUAL RESTORED 🌐
+    Backend: Connected & Authorized
     Developed by: Angga Conni Saputra
     =============================================
 -->
@@ -72,18 +72,23 @@
                         <i class="fa-solid fa-layer-group text-white text-lg"></i>
                     </div>
                     <div class="flex flex-col">
-                        <span class="font-bold text-lg tracking-tight">E-Persuratan <span class="text-blue-400 font-light">Cloud v5.5</span></span>
+                        <span class="font-bold text-lg tracking-tight">E-Persuratan <span class="text-blue-400 font-light">Cloud v5.6</span></span>
                         <span class="text-[10px] text-gray-400">Develop by - Angga Conni Saputra</span>
                     </div>
                 </div>
                 
                 <div class="flex items-center gap-3">
+                    <!-- LANGUAGE TOGGLE RESTORED -->
+                    <div class="flex bg-slate-800 p-1 rounded-lg border border-slate-700 mr-2">
+                        <button onclick="changeLanguage('id')" id="btn-lang-id" class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-600 text-white transition">ID</button>
+                        <button onclick="changeLanguage('en')" id="btn-lang-en" class="px-2 py-0.5 text-[10px] font-bold rounded text-gray-400 hover:text-white transition">EN</button>
+                    </div>
+
                     <div id="userInfoPanel" class="hidden md:flex flex-col text-right border-r border-slate-700 pr-4">
-                        <div class="text-xs text-gray-400">Status Akses</div>
+                        <div class="text-xs text-gray-400" data-i18n="status_access">Status Akses</div>
                         <div id="userRoleDisplay" class="text-sm font-semibold text-yellow-400">Read Only (Guest)</div>
                     </div>
                     
-                    <!-- REFRESH DATA BUTTON -->
                     <button onclick="loadData(true)" class="bg-slate-700 hover:bg-slate-600 w-9 h-9 rounded flex items-center justify-center transition group relative" title="Force Refresh Data">
                         <i class="fa-solid fa-rotate text-white text-xs group-hover:animate-spin"></i>
                     </button>
@@ -102,11 +107,11 @@
     <!-- MAIN CONTENT -->
     <div class="max-w-[98%] mx-auto px-2 sm:px-4 lg:px-6 py-8 relative">
         
-        <!-- ENTERPRISE LOADER -->
+        <!-- LOADER -->
         <div id="mainLoader" class="loading-overlay hidden">
             <div class="loader-box">
                 <div class="loader-spinner"></div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">Memproses Data</h3>
+                <h3 class="text-lg font-bold text-gray-800 mb-1" data-i18n="processing">Memproses Data</h3>
                 <p id="loaderText" class="text-xs text-gray-500 text-center">Sinkronisasi dengan Google Cloud...</p>
             </div>
         </div>
@@ -115,19 +120,21 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div class="lg:col-span-2 glass-panel p-5 relative">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-gray-700 flex items-center"><i class="fa-solid fa-chart-line mr-2 text-blue-600"></i> Statistik Surat</h3>
+                    <h3 class="font-bold text-gray-700 flex items-center">
+                        <i class="fa-solid fa-chart-line mr-2 text-blue-600"></i> <span data-i18n="stats_title">Statistik Surat</span>
+                    </h3>
                     <div class="flex gap-2">
-                        <select id="chartFilterRange" onchange="renderChart()" class="text-xs border rounded p-1 bg-white"><option value="6">6 Bulan</option><option value="12">1 Tahun</option></select>
+                        <select id="chartFilterRange" onchange="renderChart()" class="text-xs border rounded p-1 bg-white"><option value="6">6 Months</option><option value="12">1 Year</option></select>
                         <button onclick="loadData(true)" class="text-xs text-blue-500 hover:underline flex items-center gap-1"><i class="fa-solid fa-rotate"></i></button>
                     </div>
                 </div>
                 <div class="relative h-64 w-full"><canvas id="trafficChart"></canvas></div>
             </div>
-            <!-- MINI STATS WITH BIG NUMBER FORMAT -->
+            <!-- MINI STATS -->
             <div class="lg:col-span-1 grid grid-cols-1 gap-4">
-                <div class="glass-panel p-4 border-l-4 border-blue-500 flex justify-between items-center"><div><div class="text-gray-500 text-xs font-bold uppercase">Total Arsip</div><div class="text-3xl font-bold mt-1" id="stat-total">0</div></div><i class="fa-solid fa-database text-blue-200 text-4xl"></i></div>
-                <div class="glass-panel p-4 border-l-4 border-yellow-400 flex justify-between items-center"><div><div class="text-gray-500 text-xs font-bold uppercase">Surat Masuk</div><div class="text-3xl font-bold mt-1 text-yellow-600" id="stat-in">0</div></div><i class="fa-solid fa-inbox text-yellow-200 text-4xl"></i></div>
-                <div class="glass-panel p-4 border-l-4 border-slate-700 flex justify-between items-center"><div><div class="text-gray-500 text-xs font-bold uppercase">Surat Keluar</div><div class="text-3xl font-bold mt-1 text-slate-700" id="stat-out">0</div></div><i class="fa-solid fa-paper-plane text-slate-200 text-4xl"></i></div>
+                <div class="glass-panel p-4 border-l-4 border-blue-500 flex justify-between items-center"><div><div class="text-gray-500 text-xs font-bold uppercase" data-i18n="total_archive">Total Arsip</div><div class="text-3xl font-bold mt-1" id="stat-total">0</div></div><i class="fa-solid fa-database text-blue-200 text-4xl"></i></div>
+                <div class="glass-panel p-4 border-l-4 border-yellow-400 flex justify-between items-center"><div><div class="text-gray-500 text-xs font-bold uppercase" data-i18n="mail_in">Surat Masuk</div><div class="text-3xl font-bold mt-1 text-yellow-600" id="stat-in">0</div></div><i class="fa-solid fa-inbox text-yellow-200 text-4xl"></i></div>
+                <div class="glass-panel p-4 border-l-4 border-slate-700 flex justify-between items-center"><div><div class="text-gray-500 text-xs font-bold uppercase" data-i18n="mail_out">Surat Keluar</div><div class="text-3xl font-bold mt-1 text-slate-700" id="stat-out">0</div></div><i class="fa-solid fa-paper-plane text-slate-200 text-4xl"></i></div>
             </div>
         </div>
 
@@ -139,85 +146,79 @@
                     <div id="readOnlyOverlay" class="absolute inset-0 bg-gray-50/60 z-10 flex items-center justify-center backdrop-blur-[1px] rounded-xl border-2 border-dashed border-gray-200">
                         <div class="bg-white p-4 rounded-lg shadow-lg border text-center">
                             <i class="fa-solid fa-lock text-gray-400 text-2xl mb-2"></i>
-                            <div class="text-xs font-bold text-gray-600 uppercase">Mode Read Only</div>
-                            <button onclick="openLoginModal()" class="text-xs text-blue-600 hover:text-blue-800 underline mt-2 font-medium">Login Admin untuk Input</button>
+                            <div class="text-xs font-bold text-gray-600 uppercase" data-i18n="mode_readonly">Mode Read Only</div>
+                            <button onclick="openLoginModal()" class="text-xs text-blue-600 hover:text-blue-800 underline mt-2 font-medium" data-i18n="login_hint">Login Admin untuk Input</button>
                         </div>
                     </div>
 
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-lg font-bold text-gray-800 flex items-center">
                             <span class="bg-blue-100 text-blue-700 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
-                            Input Surat
+                            <span data-i18n="input_title">Input Surat</span>
                         </h2>
                     </div>
 
                     <form id="suratForm" onsubmit="handleSimpan(event)" class="space-y-4">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Arah</label>
+                                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="lbl_direction">Arah</label>
                                 <select id="inputArah" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs"><option value="Masuk">⬇ Masuk</option><option value="Keluar">⬆ Keluar</option></select>
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Kategori</label>
+                                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="lbl_category">Kategori</label>
                                 <select id="inputKategori" onchange="updateJenisOptions()" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs">
                                     <option value="" disabled selected>--</option>
-                                    <option value="Finance">Finance</option>
-                                    <option value="Travel">Travel</option>
-                                    <option value="Admin">Admin</option>
-                                    <option value="Lainnya">Lainnya</option>
+                                    <option value="Finance">Finance</option><option value="Travel">Travel</option><option value="Admin">Admin</option><option value="Lainnya">Lainnya</option>
                                 </select>
                             </div>
                         </div>
                         
-                        <!-- SMART INPUT JENIS DOKUMEN -->
                         <div class="relative">
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Jenis Dokumen</label>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="lbl_doctype">Jenis Dokumen</label>
                             <select id="inputJenis" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs transition-all"><option value="">...</option></select>
-                            <!-- Custom Input Appears for 'Lain-lain' -->
                             <div id="customJenisContainer" class="hidden mt-2 bg-blue-50 p-2 rounded border border-blue-200 transition-all">
                                 <label class="block text-[9px] font-bold text-blue-600 uppercase mb-1">Sebutkan Jenis Dokumen:</label>
-                                <input type="text" id="inputCustomJenis" placeholder="Ketik jenis dokumen..." class="w-full p-2 bg-white border border-blue-300 rounded text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                                <input type="text" id="inputCustomJenis" placeholder="..." class="w-full p-2 bg-white border border-blue-300 rounded text-xs focus:ring-1 focus:ring-blue-500 outline-none">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
-                            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Dari</label><input type="text" id="inputDari" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs"></div>
-                            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Kepada</label><input type="text" id="inputKepada" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs"></div>
+                            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="lbl_from">Dari</label><input type="text" id="inputDari" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs"></div>
+                            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="lbl_to">Kepada</label><input type="text" id="inputKepada" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs"></div>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Nomor Surat</label>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="lbl_no">Nomor Surat</label>
                             <input type="text" id="inputNomor" placeholder="Auto / Manual" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Tanggal Surat</label>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="lbl_date">Tanggal Surat</label>
                             <input type="date" id="inputTanggal" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Perihal</label>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="lbl_subject">Perihal</label>
                             <textarea id="inputPerihal" rows="2" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs"></textarea>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Unit Pengelola</label>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="lbl_unit">Unit Pengelola</label>
                             <input type="text" id="inputUnit" value="Sekretariat" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs">
                         </div>
                         
-                        <!-- FILE UPLOAD INPUT -->
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Upload File (PDF/Image)</label>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="lbl_file">Upload File</label>
                             <input type="file" id="inputFile" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-                            <div class="text-[10px] text-gray-400 mt-1">Maks 5MB. File akan masuk ke Google Drive.</div>
+                            <div class="text-[10px] text-gray-400 mt-1">Maks 5MB. GDrive Auto-Upload.</div>
                         </div>
 
                          <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Status</label>
+                                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="lbl_status">Status</label>
                                 <select id="inputStatus" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-xs">
                                     <option value="Draft">Draft</option><option value="Sent">Sent</option><option value="Received">Received</option><option value="Disposisi">Disposisi</option><option value="Done">Done</option><option value="Archived">Archived</option>
                                 </select>
                             </div>
                         </div>
                         <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-lg shadow-lg text-xs flex items-center justify-center gap-2 transition hover:scale-[1.02]">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> Simpan ke Cloud
+                            <i class="fa-solid fa-cloud-arrow-up"></i> <span data-i18n="btn_save">Simpan ke Cloud</span>
                         </button>
                     </form>
                 </div>
@@ -230,14 +231,13 @@
                         <div class="flex items-center gap-4">
                             <h2 class="text-lg font-bold text-gray-800 flex items-center">
                                 <span class="bg-green-100 text-green-700 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
-                                Arsip Digital
+                                <span data-i18n="archive_title">Arsip Digital</span>
                             </h2>
-                            <!-- CALENDAR WIDGET BUTTON -->
                             <button onclick="toggleCalendarModal()" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg shadow-sm hover:border-blue-400 hover:text-blue-600 transition text-xs font-medium group active:scale-95">
                                 <div class="bg-blue-50 text-blue-600 w-6 h-6 rounded flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition">
                                    <i class="fa-regular fa-calendar-check"></i>
                                 </div>
-                                <span id="calWidgetLabel">Filter Tanggal</span>
+                                <span id="calWidgetLabel" data-i18n="btn_filter_date">Filter Tanggal</span>
                             </button>
                         </div>
                         <div class="flex gap-2">
@@ -248,7 +248,7 @@
 
                     <!-- FILTERS & SORTING -->
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-2 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                        <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="🔍 Cari..." class="w-full p-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-400">
+                        <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="Cari..." class="w-full p-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-400">
                         <select id="filterArah" onchange="renderTable()" class="w-full p-2 bg-white border border-gray-300 rounded text-sm"><option value="All">Semua Arah</option><option value="Masuk">Masuk</option><option value="Keluar">Keluar</option></select>
                         <select id="filterStatus" onchange="renderTable()" class="w-full p-2 bg-white border border-gray-300 rounded text-sm"><option value="All">Semua Status</option><option value="Sent">Sent</option><option value="Received">Received</option><option value="Done">Done</option></select>
                         <select id="filterKategori" onchange="renderTable()" class="w-full p-2 bg-white border border-gray-300 rounded text-sm">
@@ -258,7 +258,6 @@
                             <option value="Admin">Admin</option>
                             <option value="Lainnya">Lainnya</option>
                         </select>
-                        <!-- SORT FILTER -->
                         <select id="sortFilter" onchange="renderTable()" class="w-full p-2 bg-white border border-gray-300 rounded text-sm font-semibold text-blue-600">
                             <option value="newest">📅 Terbaru (Newest)</option>
                             <option value="oldest">📅 Terlama (Oldest)</option>
@@ -270,15 +269,14 @@
                         <table class="min-w-full text-sm text-left divide-y divide-gray-200">
                             <thead class="bg-gray-50 text-xs text-gray-500 uppercase font-semibold sticky top-0 bg-gray-50 z-10">
                                 <tr>
-                                    <th class="px-4 py-3 text-center">Arah</th>
-                                    <th class="px-4 py-3">No. Surat</th>
-                                    <th class="px-4 py-3 text-center">Tgl</th>
-                                    <th class="px-4 py-3">Perihal</th>
-                                    <th class="px-4 py-3">Jenis</th>
-                                    <th class="px-4 py-3 text-center">File</th>
-                                    <th class="px-4 py-3 text-center">Status</th>
-                                    <!-- EDIT HEADER -->
-                                    <th class="px-4 py-3 text-center action-col hidden-in-readonly">Edit</th>
+                                    <th class="px-4 py-3 text-center" data-i18n="th_dir">Arah</th>
+                                    <th class="px-4 py-3" data-i18n="th_no">No. Surat</th>
+                                    <th class="px-4 py-3 text-center" data-i18n="th_date">Tgl</th>
+                                    <th class="px-4 py-3" data-i18n="th_subj">Perihal</th>
+                                    <th class="px-4 py-3" data-i18n="th_type">Jenis</th>
+                                    <th class="px-4 py-3 text-center" data-i18n="th_file">File</th>
+                                    <th class="px-4 py-3 text-center" data-i18n="th_status">Status</th>
+                                    <th class="px-4 py-3 text-center action-col hidden-in-readonly" data-i18n="th_edit">Edit</th>
                                 </tr>
                             </thead>
                             <tbody id="dataTableBody" class="divide-y divide-gray-100 bg-white">
@@ -287,14 +285,14 @@
                         </table>
                         <div id="emptyState" class="hidden flex-col items-center justify-center py-12 text-center">
                             <div class="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mb-3"><i class="fa-solid fa-cloud-arrow-down text-gray-300 text-2xl"></i></div>
-                            <h3 class="text-gray-600 font-medium">Memuat Data...</h3>
+                            <h3 class="text-gray-600 font-medium" data-i18n="loading_data">Memuat Data...</h3>
                         </div>
                     </div>
                     
                     <!-- PAGINATION -->
                     <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600 bg-gray-50 p-3 rounded border border-gray-200">
                         <div class="flex items-center gap-2">
-                            <span>Tampilkan:</span>
+                            <span data-i18n="show_rows">Tampilkan:</span>
                             <select id="rowsPerPage" onchange="changeRowsPerPage()" class="bg-white border border-gray-300 rounded px-2 py-1 outline-none text-sm"><option value="20">20</option><option value="50">50</option><option value="100">100</option></select>
                         </div>
                         <div class="flex items-center gap-4">
@@ -310,18 +308,20 @@
         </div>
     </div>
 
-    <!-- MODALS (LOGIN, DETAIL, EDIT, CALENDAR) -->
-    
-    <div id="loginModal" class="fixed inset-0 z-[80] hidden bg-slate-900/80 backdrop-blur-sm flex items-center justify-center fade-enter"><div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm relative modal-enter"><button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times"></i></button><div class="text-center mb-6"><div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 text-2xl"><i class="fa-solid fa-user-lock"></i></div><h3 class="text-xl font-bold text-gray-800">Login Administrator</h3><p class="text-xs text-gray-500 mt-1">Gunakan akun yang terdaftar di Sheet "Users"</p></div><form onsubmit="handleLogin(event)" class="space-y-4"><div><label class="text-xs font-bold text-gray-500 uppercase">Username</label><input type="text" id="loginUser" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required></div><div><label class="text-xs font-bold text-gray-500 uppercase">Password</label><input type="password" id="loginPass" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required></div><button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition text-sm flex justify-center items-center gap-2"><span>Masuk Sistem</span> <i class="fa-solid fa-arrow-right"></i></button></form></div></div>
+    <!-- MODALS -->
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 z-[80] hidden bg-slate-900/80 backdrop-blur-sm flex items-center justify-center fade-enter"><div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm relative modal-enter"><button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times"></i></button><div class="text-center mb-6"><div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 text-2xl"><i class="fa-solid fa-user-lock"></i></div><h3 class="text-xl font-bold text-gray-800" data-i18n="login_title">Login Administrator</h3><p class="text-xs text-gray-500 mt-1">Gunakan akun yang terdaftar di Sheet "Users"</p></div><form onsubmit="handleLogin(event)" class="space-y-4"><div><label class="text-xs font-bold text-gray-500 uppercase">Username</label><input type="text" id="loginUser" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required></div><div><label class="text-xs font-bold text-gray-500 uppercase">Password</label><input type="password" id="loginPass" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" required></div><button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition text-sm flex justify-center items-center gap-2"><span>Masuk Sistem</span> <i class="fa-solid fa-arrow-right"></i></button></form></div></div>
 
+    <!-- View Modal -->
     <div id="viewModal" class="fixed inset-0 z-50 hidden" onclick="if(event.target === this) closeViewModal()"><div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div><div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-0 w-full max-w-2xl modal-enter relative z-10 overflow-hidden"><div class="bg-blue-900 p-5 flex justify-between items-center text-white"><h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> Detail Arsip</h3><button onclick="closeViewModal()" class="hover:bg-blue-800 rounded-full w-8 h-8 flex items-center justify-center transition"><i class="fa-solid fa-times"></i></button></div><div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto" id="viewModalContent"></div><div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-between items-center" id="viewModalFooter"></div></div></div>
 
+    <!-- Edit Modal -->
     <div id="editModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center"><div class="bg-white rounded-xl shadow-2xl p-0 w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col modal-enter"><div class="bg-amber-500 p-4 flex justify-between items-center text-white font-bold"><span><i class="fa-solid fa-pen-to-square mr-2"></i> Revisi Data Cloud</span><button onclick="closeEditModal()"><i class="fa-solid fa-times"></i></button></div><div class="p-6 overflow-y-auto"><form id="editForm" class="space-y-4"><input type="hidden" id="editId"><div class="bg-amber-50 text-amber-800 p-3 text-xs rounded border border-amber-200"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Perubahan akan langsung disimpan ke Google Sheets.</div><div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold uppercase text-gray-500">Arah</label><select id="editArah" class="w-full p-2 border rounded text-sm"><option value="Masuk">Masuk</option><option value="Keluar">Keluar</option></select></div><div><label class="text-xs font-bold uppercase text-gray-500">Nomor</label><input type="text" id="editNomor" class="w-full p-2 border rounded text-sm"></div></div><div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold uppercase text-gray-500">Tanggal</label><input type="date" id="editTanggal" class="w-full p-2 border rounded text-sm"></div><div><label class="text-xs font-bold uppercase text-gray-500">Status</label><select id="editStatus" class="w-full p-2 border rounded text-sm"><option value="Draft">Draft</option><option value="Sent">Sent</option><option value="Received">Received</option><option value="Disposisi">Disposisi</option><option value="Done">Done</option></select></div></div><div><label class="text-xs font-bold uppercase text-gray-500">Perihal</label><textarea id="editPerihal" rows="2" class="w-full p-2 border rounded text-sm"></textarea></div><div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-bold uppercase text-gray-500">Dari</label><input type="text" id="editDari" class="w-full p-2 border rounded text-sm"></div><div><label class="text-xs font-bold uppercase text-gray-500">Kepada</label><input type="text" id="editKepada" class="w-full p-2 border rounded text-sm"></div></div><div><label class="text-xs font-bold uppercase text-gray-500">Unit</label><input type="text" id="editUnit" class="w-full p-2 border rounded text-sm"></div><div><label class="text-xs font-bold uppercase text-gray-500">Link GDrive (Otomatis/Manual)</label><input type="text" id="editLink" class="w-full p-2 border rounded text-sm text-blue-600"></div></form></div><div class="p-4 bg-gray-50 border-t flex justify-end gap-2"><button onclick="closeEditModal()" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Batal</button><button onclick="saveEditData()" class="px-4 py-2 text-sm bg-amber-500 text-white rounded font-bold hover:bg-amber-600 shadow">Update Data</button></div></div></div>
 
+    <!-- Calendar Modal -->
     <div id="calendarModal" class="fixed inset-0 z-50 hidden" onclick="if(event.target === this) toggleCalendarModal()"><div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div><div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-6 w-full max-w-md modal-enter relative z-10"><div class="flex justify-between items-center mb-6 border-b pb-4"><h3 class="text-lg font-bold text-gray-800 flex items-center gap-2"><i class="fa-regular fa-calendar-check text-blue-600"></i> <span id="calModalTitle">Filter Tanggal</span></h3><div class="flex items-center gap-3"><button onclick="clearDateFilter()" class="text-xs text-red-500 hover:text-red-700 font-medium hover:underline"><i class="fa-solid fa-trash mr-1"></i> Reset</button><button onclick="toggleCalendarModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"><i class="fa-solid fa-times text-gray-500"></i></button></div></div><div class="bg-white"><div class="cal-header flex justify-between items-center mb-4"><button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition"><i class="fa-solid fa-chevron-left"></i></button><span id="calMonthYear" class="text-blue-900 font-bold uppercase tracking-wide text-sm">February 2026</span><button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition"><i class="fa-solid fa-chevron-right"></i></button></div><div class="grid grid-cols-7 gap-1 text-center mb-2"><div class="text-xs font-bold text-gray-400">Su</div><div class="text-xs font-bold text-gray-400">Mo</div><div class="text-xs font-bold text-gray-400">Tu</div><div class="text-xs font-bold text-gray-400">We</div><div class="text-xs font-bold text-gray-400">Th</div><div class="text-xs font-bold text-gray-400">Fr</div><div class="text-xs font-bold text-gray-400">Sa</div></div><div id="calendarGrid" class="grid grid-cols-7 gap-2"></div><div class="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400 pt-4 border-t"><span class="w-2 h-2 rounded-full bg-blue-400"></span><span id="calLegend">Ada Arsip</span></div></div></div></div>
 
     <script>
-        // WEB APP URL FINAL
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbWSHzMtJ9_nst8EeN2671IzdY_craNh_DPToYsJCcAT8I6Ak-4Q2aeyczqkiFZMga/exec"; 
         
         let db_surat = [];
@@ -330,6 +330,46 @@
         let rowsPerPage = 20;
         let calDate = new Date();
         let activeFilterDate = null;
+
+        // DICTIONARY FOR TRANSLATIONS
+        const TRANSLATIONS = {
+            status_access: { id: "Status Akses", en: "Access Status" },
+            stats_title: { id: "Statistik Surat", en: "Mail Statistics" },
+            total_archive: { id: "Total Arsip", en: "Total Archives" },
+            mail_in: { id: "Surat Masuk", en: "Incoming Mail" },
+            mail_out: { id: "Surat Keluar", en: "Outgoing Mail" },
+            input_title: { id: "Input Surat", en: "New Entry" },
+            mode_readonly: { id: "Mode Read Only", en: "Read Only Mode" },
+            login_hint: { id: "Login Admin untuk Input", en: "Login as Admin to Input" },
+            lbl_direction: { id: "Arah", en: "Direction" },
+            lbl_category: { id: "Kategori", en: "Category" },
+            lbl_doctype: { id: "Jenis Dokumen", en: "Doc Type" },
+            lbl_from: { id: "Dari", en: "From" },
+            lbl_to: { id: "Kepada", en: "To" },
+            lbl_no: { id: "Nomor Surat", en: "Ref Number" },
+            lbl_date: { id: "Tanggal Surat", en: "Date" },
+            lbl_subject: { id: "Perihal", en: "Subject" },
+            lbl_unit: { id: "Unit Pengelola", en: "Unit" },
+            lbl_file: { id: "Upload File", en: "Upload File" },
+            lbl_status: { id: "Status", en: "Status" },
+            btn_save: { id: "Simpan ke Cloud", en: "Save to Cloud" },
+            archive_title: { id: "Arsip Digital", en: "Digital Archive" },
+            btn_filter_date: { id: "Filter Tanggal", en: "Date Filter" },
+            th_dir: { id: "Arah", en: "Dir" },
+            th_no: { id: "No. Surat", en: "Ref No" },
+            th_date: { id: "Tgl", en: "Date" },
+            th_subj: { id: "Perihal", en: "Subject" },
+            th_type: { id: "Jenis", en: "Type" },
+            th_file: { id: "File", en: "File" },
+            th_status: { id: "Status", en: "Status" },
+            th_edit: { id: "Edit", en: "Edit" },
+            show_rows: { id: "Tampilkan:", en: "Show:" },
+            login_title: { id: "Login Administrator", en: "Admin Login" },
+            processing: { id: "Memproses Data", en: "Processing Data" },
+            loading_data: { id: "Memuat Data...", en: "Loading Data..." }
+        };
+
+        let currentLang = 'id';
 
         const DOC_CONFIG = {
             'Finance': ['Payment Request', 'Invoice', 'Petty Cash', 'Purchase Request'],
@@ -343,7 +383,35 @@
             loadData();
             updateJenisOptions();
             document.getElementById('inputJenis').addEventListener('change', checkCustomJenis);
+            changeLanguage('id'); // Default lang
         });
+
+        // --- LANGUAGE SWITCHER ---
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const btnId = document.getElementById('btn-lang-id');
+            const btnEn = document.getElementById('btn-lang-en');
+            
+            if (lang === 'id') {
+                btnId.className = "px-2 py-0.5 text-[10px] font-bold rounded bg-blue-600 text-white transition";
+                btnEn.className = "px-2 py-0.5 text-[10px] font-bold rounded text-gray-400 hover:text-white transition";
+            } else {
+                btnEn.className = "px-2 py-0.5 text-[10px] font-bold rounded bg-blue-600 text-white transition";
+                btnId.className = "px-2 py-0.5 text-[10px] font-bold rounded text-gray-400 hover:text-white transition";
+            }
+
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (TRANSLATIONS[key]) {
+                    el.innerText = TRANSLATIONS[key][lang];
+                }
+            });
+            
+            // Re-render components that might have hardcoded text
+            renderTable();
+            renderCalendar();
+        }
 
         // --- BIG NUMBER FORMATTER ---
         function formatBigNumber(num) {
@@ -368,18 +436,21 @@
             }, 3000);
         }
 
-        function showLoader(show, text="Loading...") { 
+        function showLoader(show, text) { 
             const l = document.getElementById('mainLoader'); 
             const t = document.getElementById('loaderText');
-            if(t) t.innerText = text;
+            if(text && t) t.innerText = text;
+            else if(t) t.innerText = currentLang === 'id' ? "Sinkronisasi..." : "Synchronizing...";
+            
             if(show) l.classList.remove('hidden'); else l.classList.add('hidden'); 
         }
 
         // --- AUTH ---
         function handleAuthClick() {
             if(currentUser) {
-                if(confirm("Yakin ingin logout?")) {
-                    currentUser = null; updateUIForAuth(); showToast("Berhasil Logout", "success");
+                if(confirm(currentLang === 'id' ? "Yakin ingin logout?" : "Logout now?")) {
+                    currentUser = null; updateUIForAuth(); 
+                    showToast(currentLang === 'id' ? "Berhasil Logout" : "Logged Out", "success");
                 }
             } else { openLoginModal(); }
         }
@@ -400,9 +471,9 @@
                 overlay.classList.add('hidden');
                 actionCols.forEach(el => el.classList.remove('hidden-in-readonly'));
             } else {
-                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Login Admin';
+                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Login';
                 btn.className = "bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded text-xs font-bold transition flex items-center gap-2";
-                role.innerHTML = "Read Only (Guest)";
+                role.innerHTML = currentLang === 'id' ? "Read Only (Guest)" : "Read Only (Guest)";
                 role.className = "text-sm font-semibold text-yellow-400";
                 panel.classList.add('read-only-mode');
                 overlay.classList.remove('hidden');
@@ -417,32 +488,32 @@
             e.preventDefault();
             const u = document.getElementById('loginUser').value;
             const p = document.getElementById('loginPass').value;
-            showLoader(true, "Memverifikasi...");
+            showLoader(true);
             try {
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?op=login&user=${encodeURIComponent(u)}&pass=${encodeURIComponent(p)}`);
                 const result = await response.json();
                 if(result.status === 'success') {
                     currentUser = { name: result.name, role: 'admin' };
-                    updateUIForAuth(); closeLoginModal(); showToast(`Selamat datang, ${result.name}!`);
-                } else { showToast(result.message || "Login Gagal", "error"); }
-            } catch (err) { showToast("Gagal Login. Cek Koneksi.", "error"); } finally { showLoader(false); }
+                    updateUIForAuth(); closeLoginModal(); 
+                    showToast(currentLang === 'id' ? `Selamat datang, ${result.name}!` : `Welcome, ${result.name}!`);
+                } else { showToast(result.message || "Login Failed", "error"); }
+            } catch (err) { showToast("Connection Error", "error"); } finally { showLoader(false); }
         }
 
         // --- DATA CRUD ---
         async function loadData(forceRefresh = false) {
-            showLoader(true, forceRefresh ? "Refreshing Data..." : "Memuat Data...");
+            showLoader(true);
             try {
-                // Add timestamp to prevent caching
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?op=read&t=${Date.now()}`);
                 const result = await response.json();
                 if(result.status === 'success') {
                     db_surat = result.data;
                     renderTable(); renderChart(); renderCalendar();
-                    if(forceRefresh) showToast("Data Diperbarui!");
+                    if(forceRefresh) showToast(currentLang === 'id' ? "Data Diperbarui!" : "Data Updated!");
                 }
             } catch (error) { 
                 console.error(error); 
-                showToast("Gagal Load Data. Periksa Console", "error");
+                showToast("Load Error", "error");
             } finally { showLoader(false); }
         }
 
@@ -463,7 +534,6 @@
                 const file = fileInput.files[0];
                 if (file.size > 5 * 1024 * 1024) { showToast("File Max 5MB", "error"); return; }
                 const base64 = await toBase64(file);
-                // Ensure base64 string is complete
                 filePayload = { fileData: base64, fileName: file.name, mimeType: file.type };
             }
 
@@ -486,7 +556,7 @@
                 ...filePayload
             };
 
-            showLoader(true, "Menyimpan & Upload ke Drive...");
+            showLoader(true);
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, { 
                     method: 'POST', 
@@ -496,11 +566,10 @@
                 try {
                     const resJson = JSON.parse(resText);
                     if(resJson.status === 'success') {
-                        showToast("Data & File Tersimpan!");
+                        showToast(currentLang === 'id' ? "Data Tersimpan!" : "Data Saved!");
                         document.getElementById('suratForm').reset();
                         document.getElementById('inputTanggal').valueAsDate = new Date();
                         updateJenisOptions();
-                        // Force refresh data after save to see changes immediately
                         loadData(false);
                     } else {
                         showToast(resJson.message, "error");
@@ -511,7 +580,7 @@
                 }
             } catch(err) { 
                 console.error(err);
-                showToast("Gagal menyimpan. Cek Koneksi", "error"); 
+                showToast("Connection Error", "error"); 
             } finally { showLoader(false); }
         }
 
@@ -540,7 +609,6 @@
                 return matchSearch && matchArah && matchStatus && matchDate && matchCat;
             });
 
-            // SORT LOGIC
             filtered.sort((a, b) => {
                 const dateA = new Date(a.tanggal.split('/').reverse().join('-'));
                 const dateB = new Date(b.tanggal.split('/').reverse().join('-'));
@@ -555,7 +623,6 @@
             const start = (currentPage - 1) * rowsPerPage;
             const paginated = filtered.slice(start, start + rowsPerPage);
 
-            // STATS UPDATE WITH FORMATTER
             document.getElementById('stat-total').innerText = formatBigNumber(db_surat.length);
             document.getElementById('stat-in').innerText = formatBigNumber(db_surat.filter(s=>s.arah==='Masuk').length);
             document.getElementById('stat-out').innerText = formatBigNumber(db_surat.filter(s=>s.arah==='Keluar').length);
@@ -630,7 +697,14 @@
             }
         }
         function changeMonth(delta) { calDate.setMonth(calDate.getMonth() + delta); renderCalendar(); }
-        function clearDateFilter() { activeFilterDate = null; renderTable(); toggleCalendarModal(); document.getElementById('calWidgetLabel').innerText = "Filter Tanggal"; document.getElementById('calWidgetLabel').className = ""; }
+        function clearDateFilter() { 
+            activeFilterDate = null; 
+            renderTable(); 
+            toggleCalendarModal(); 
+            const lbl = document.getElementById('calWidgetLabel');
+            lbl.innerText = currentLang === 'id' ? "Filter Tanggal" : "Date Filter"; 
+            lbl.className = ""; 
+        }
 
         function renderChart() {
             const ctx = document.getElementById('trafficChart').getContext('2d');
@@ -669,7 +743,7 @@
 
         async function handleDelete(id) {
             if (!confirm("Hapus data permanen?")) return;
-            showLoader(true, "Menghapus...");
+            showLoader(true);
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ op: 'delete', data: { id: id } }) });
                 const resJson = await response.json();
@@ -712,7 +786,7 @@
                 gdriveLink: document.getElementById('editLink').value,
                 jenis: 'Updated' 
             };
-            showLoader(true, "Menyimpan Perubahan...");
+            showLoader(true);
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ op: 'update', data: data }) });
                 const resJson = await response.json();
