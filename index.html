@@ -2,6 +2,7 @@
     =============================================
     E-PERSURATAN GOV SYSTEM MOCKUP
     Developed by: Angga Conni Saputra
+    Mode: Auditor Compliant (Full Data Visibility)
     =============================================
 -->
 <!DOCTYPE html>
@@ -61,14 +62,14 @@
 
     <!-- NAVBAR -->
     <nav class="bg-slate-900 text-white sticky top-0 z-40 shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-[98%] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center gap-3">
                     <div class="bg-blue-600 w-10 h-10 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/50">
                         <i class="fa-solid fa-layer-group text-white text-lg"></i>
                     </div>
                     <div class="flex flex-col">
-                        <span class="font-bold text-lg tracking-tight leading-tight">E-Persuratan <span class="text-blue-400 font-light">Gov v3.5</span></span>
+                        <span class="font-bold text-lg tracking-tight leading-tight">E-Persuratan <span class="text-blue-400 font-light">Gov v3.6</span></span>
                         <span class="text-[10px] text-gray-400 tracking-wide font-medium">Develop by - Angga Conni Saputra</span>
                     </div>
                 </div>
@@ -93,7 +94,7 @@
     </nav>
 
     <!-- MAIN CONTENT -->
-    <div class="max-w-[95%] mx-auto px-2 sm:px-4 lg:px-6 py-8">
+    <div class="max-w-[98%] mx-auto px-2 sm:px-4 lg:px-6 py-8">
         
         <!-- DASHBOARD CHART SECTION -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -202,13 +203,18 @@
                             <textarea id="inputPerihal" rows="2" required class="w-full p-2 bg-gray-50 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-xs"></textarea>
                         </div>
 
-                         <div>
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="attachment">Lampiran (Upload)</label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:bg-blue-50 hover:border-blue-300 transition cursor-pointer" onclick="alert('Simulasi: File terupload ke server (Mockup).')">
-                                <div class="flex flex-col items-center gap-1">
-                                    <i class="fa-solid fa-cloud-arrow-up text-blue-400 text-lg"></i>
-                                    <span class="text-[10px] text-gray-400">Klik/Drop File PDF</span>
-                                </div>
+                        <!-- UNIT PENGELOLA -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="unit">Unit Pengelola</label>
+                            <input type="text" id="inputUnit" value="Sekretariat" class="w-full p-2 bg-gray-50 border border-gray-300 rounded outline-none text-xs">
+                        </div>
+
+                        <!-- LINK GDRIVE -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="gdrive">Link GDrive (File)</label>
+                            <div class="flex items-center border border-gray-300 rounded overflow-hidden">
+                                <span class="bg-gray-100 px-3 py-2 text-gray-500 border-r"><i class="fa-brands fa-google-drive"></i></span>
+                                <input type="url" id="inputLink" placeholder="https://drive.google.com/..." class="w-full p-2 outline-none text-xs">
                             </div>
                         </div>
 
@@ -217,14 +223,15 @@
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="status">Status</label>
                                 <select id="inputStatus" class="w-full p-2 bg-gray-50 border border-gray-300 rounded outline-none text-xs">
                                     <option value="Draft">Draft</option>
-                                    <option value="Sent">Sent</option>
-                                    <option value="Received">Received</option>
-                                    <option value="Done">Done</option>
+                                    <option value="Sent">Sent / Dikirim</option>
+                                    <option value="Received">Received / Diterima</option>
+                                    <option value="Disposisi">Disposisi</option>
+                                    <option value="Done">Selesai</option>
+                                    <option value="Archived">Arsip</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1" data-i18n="unit">Unit</label>
-                                <input type="text" id="inputUnit" value="Sekretariat" class="w-full p-2 bg-gray-50 border border-gray-300 rounded outline-none text-xs">
+                            <div class="flex items-end">
+                                <div class="text-[10px] text-gray-400 italic">Pastikan data valid sebelum simpan.</div>
                             </div>
                         </div>
 
@@ -282,7 +289,9 @@
                                 <option value="Draft">Draft</option>
                                 <option value="Sent">Sent</option>
                                 <option value="Received">Received</option>
+                                <option value="Disposisi">Disposisi</option>
                                 <option value="Done">Done</option>
+                                <option value="Archived">Archived</option>
                             </select>
                         </div>
                         <div>
@@ -303,11 +312,14 @@
                                     <th class="px-4 py-3 text-center whitespace-nowrap" data-i18n="col_dir">Arah</th>
                                     <th class="px-4 py-3 whitespace-nowrap" data-i18n="col_no">Nomor Surat</th>
                                     <th class="px-4 py-3 text-center whitespace-nowrap" data-i18n="col_date">Tgl Surat</th>
+                                    <th class="px-4 py-3 whitespace-nowrap" data-i18n="col_from">Dari</th>
+                                    <th class="px-4 py-3 whitespace-nowrap" data-i18n="col_to">Kepada</th>
                                     <th class="px-4 py-3 whitespace-nowrap" data-i18n="col_subj">Perihal</th>
                                     <th class="px-4 py-3 whitespace-nowrap" data-i18n="col_type">Jenis</th>
-                                    <th class="px-4 py-3 text-center whitespace-nowrap" data-i18n="col_file">File</th> <!-- NEW -->
+                                    <th class="px-4 py-3 whitespace-nowrap" data-i18n="col_unit">Unit</th>
+                                    <th class="px-4 py-3 text-center whitespace-nowrap" data-i18n="col_file">File</th>
                                     <th class="px-4 py-3 text-center whitespace-nowrap" data-i18n="col_status">Status</th>
-                                    <th class="px-4 py-3 text-center whitespace-nowrap" data-i18n="col_action">Edit</th> <!-- NEW -->
+                                    <th class="px-4 py-3 text-center whitespace-nowrap" data-i18n="col_action">Edit</th>
                                 </tr>
                             </thead>
                             <tbody id="dataTableBody" class="divide-y divide-gray-100 bg-white">
@@ -409,7 +421,7 @@
         </div>
     </div>
 
-    <!-- 3. MODAL EDIT/REVISI -->
+    <!-- 3. MODAL EDIT/REVISI (FULL AUDIT) -->
     <div id="editModal" class="fixed inset-0 z-50 hidden" onclick="if(event.target === this) closeEditModal()">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-0 w-full max-w-lg modal-enter relative z-10 overflow-hidden">
@@ -420,10 +432,28 @@
             <div class="p-6 overflow-y-auto max-h-[70vh]">
                 <form id="editForm" class="space-y-4">
                     <input type="hidden" id="editId">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Perihal</label>
-                        <textarea id="editPerihal" rows="2" class="w-full p-2 bg-gray-50 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 outline-none text-sm"></textarea>
+                    <div class="bg-amber-50 p-3 rounded text-xs text-amber-800 border border-amber-200 mb-4">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Mode Revisi: Silakan ubah data yang salah.
                     </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Arah</label>
+                            <select id="editArah" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-sm">
+                                <option value="Masuk">Masuk</option><option value="Keluar">Keluar</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tanggal</label>
+                            <input type="date" id="editTanggal" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nomor Surat</label>
+                        <input type="text" id="editNomor" class="w-full p-2 bg-gray-100 border border-gray-300 rounded text-sm text-gray-600 font-mono" readonly>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Dari</label>
@@ -434,20 +464,28 @@
                             <input type="text" id="editKepada" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-sm">
                         </div>
                     </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Perihal</label>
+                        <textarea id="editPerihal" rows="2" class="w-full p-2 bg-gray-50 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 outline-none text-sm"></textarea>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Unit</label>
+                            <input type="text" id="editUnit" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-sm">
+                        </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
                             <select id="editStatus" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-sm">
-                                <option value="Draft">Draft</option><option value="Sent">Sent</option><option value="Received">Received</option><option value="Done">Done</option>
+                                <option value="Draft">Draft</option><option value="Sent">Sent</option><option value="Received">Received</option><option value="Disposisi">Disposisi</option><option value="Done">Done</option><option value="Archived">Archived</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">File Attachment</label>
-                            <select id="editFileStatus" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-sm">
-                                <option value="true">✅ Ada File</option>
-                                <option value="false">❌ Belum Ada</option>
-                            </select>
-                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Link GDrive</label>
+                        <input type="url" id="editLink" class="w-full p-2 bg-gray-50 border border-gray-300 rounded text-sm text-blue-600">
                     </div>
                 </form>
             </div>
@@ -462,7 +500,7 @@
     <script>
         // --- 1. CONFIG ---
         const TRANSLATIONS = {
-            app_title: { id: 'E-Persuratan <span class="text-blue-400 font-light">Gov v3.5</span>', en: 'E-Correspondence <span class="text-blue-400 font-light">Gov v3.5</span>' },
+            app_title: { id: 'E-Persuratan <span class="text-blue-400 font-light">Gov v3.6</span>', en: 'E-Correspondence <span class="text-blue-400 font-light">Gov v3.6</span>' },
             login_as: { id: "Login sebagai", en: "Logged in as" },
             chart_title: { id: "Statistik Lalu Lintas Surat", en: "Mail Traffic Statistics" },
             last_6_months: { id: "6 Bulan Terakhir", en: "Last 6 Months" },
@@ -480,6 +518,7 @@
             letter_date: { id: "Tanggal Surat", en: "Letter Date" },
             subject: { id: "Perihal", en: "Subject" },
             attachment: { id: "Lampiran (Upload)", en: "Attachment (Upload)" },
+            gdrive: { id: "Link GDrive (File)", en: "GDrive Link (File)" },
             status: { id: "Status", en: "Status" },
             unit: { id: "Unit Pengelola", en: "Managing Unit" },
             btn_save: { id: "Simpan Data", en: "Save Record" },
@@ -496,11 +535,14 @@
             col_dir: { id: "Arah", en: "Dir" },
             col_no: { id: "Nomor Surat", en: "Ref Number" },
             col_date: { id: "Tgl Surat", en: "Date" },
+            col_from: { id: "Dari", en: "From" },
+            col_to: { id: "Kepada", en: "To" },
             col_subj: { id: "Perihal", en: "Subject" },
             col_type: { id: "Jenis", en: "Type" },
-            col_file: { id: "File", en: "File" }, // NEW
+            col_unit: { id: "Unit", en: "Unit" },
+            col_file: { id: "File", en: "File" }, 
             col_status: { id: "Status", en: "Status" },
-            col_action: { id: "Edit", en: "Edit" } // NEW
+            col_action: { id: "Edit", en: "Edit" } 
         };
 
         const DOC_CONFIG = {
@@ -512,7 +554,7 @@
         let currentLang = 'id';
         let currentPage = 1;
         let rowsPerPage = 20;
-        let db_surat = JSON.parse(localStorage.getItem('db_surat_v35')) || []; // Changed key to v35 for update
+        let db_surat = JSON.parse(localStorage.getItem('db_surat_v36')) || []; // Changed to v36
         let calDate = new Date();
         let activeFilterDate = null;
 
@@ -534,7 +576,8 @@
                 const date = new Date(today.getFullYear(), today.getMonth() - randomMonth, Math.floor(Math.random() * 28) + 1);
                 const cat = categories[Math.floor(Math.random() * categories.length)];
                 const typeConfig = DOC_CONFIG[cat][Math.floor(Math.random() * DOC_CONFIG[cat].length)];
-                
+                const hasFile = Math.random() > 0.2;
+
                 db_surat.push({
                     id: Date.now() + i,
                     nomor: `${typeConfig.code}/${getRomanMonth(date)}/${date.getFullYear()}/${(Math.floor(Math.random()*99)+1).toString().padStart(3,'0')}`,
@@ -546,11 +589,12 @@
                     kepada: receivers[Math.floor(Math.random() * receivers.length)],
                     status: statuses[Math.floor(Math.random() * statuses.length)],
                     unit: units[Math.floor(Math.random() * units.length)],
-                    hasFile: Math.random() > 0.2 // 80% chance of file
+                    hasFile: hasFile,
+                    gdriveLink: hasFile ? "https://drive.google.com/file/d/mockup-id" : ""
                 });
             }
             db_surat.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
-            localStorage.setItem('db_surat_v35', JSON.stringify(db_surat));
+            localStorage.setItem('db_surat_v36', JSON.stringify(db_surat));
         }
 
         if(db_surat.length === 0) generateDummyData();
@@ -593,11 +637,15 @@
             const item = db_surat.find(s => s.id === id);
             if(!item) return;
             document.getElementById('editId').value = item.id;
+            document.getElementById('editNomor').value = item.nomor;
+            document.getElementById('editTanggal').value = item.tanggal;
+            document.getElementById('editArah').value = item.arah;
             document.getElementById('editPerihal').value = item.perihal;
             document.getElementById('editDari').value = item.dari;
             document.getElementById('editKepada').value = item.kepada;
             document.getElementById('editStatus').value = item.status;
-            document.getElementById('editFileStatus').value = item.hasFile;
+            document.getElementById('editUnit').value = item.unit;
+            document.getElementById('editLink').value = item.gdriveLink || "";
             document.getElementById('editModal').classList.remove('hidden');
         }
         function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
@@ -606,16 +654,24 @@
             const id = parseInt(document.getElementById('editId').value);
             const index = db_surat.findIndex(s => s.id === id);
             if(index !== -1) {
+                // Update All Fields (Full Audit)
+                db_surat[index].arah = document.getElementById('editArah').value;
+                db_surat[index].tanggal = document.getElementById('editTanggal').value;
                 db_surat[index].perihal = document.getElementById('editPerihal').value;
                 db_surat[index].dari = document.getElementById('editDari').value;
                 db_surat[index].kepada = document.getElementById('editKepada').value;
                 db_surat[index].status = document.getElementById('editStatus').value;
-                db_surat[index].hasFile = document.getElementById('editFileStatus').value === "true";
+                db_surat[index].unit = document.getElementById('editUnit').value;
                 
-                localStorage.setItem('db_surat_v35', JSON.stringify(db_surat));
-                alert("Data berhasil direvisi!");
+                // Link Logic
+                const link = document.getElementById('editLink').value;
+                db_surat[index].gdriveLink = link;
+                db_surat[index].hasFile = link.length > 0;
+                
+                localStorage.setItem('db_surat_v36', JSON.stringify(db_surat));
+                alert("Data revisi tersimpan.");
                 closeEditModal();
-                renderTable(); renderChart(); // Refresh UI
+                renderTable(); renderChart();
             }
         }
 
@@ -623,21 +679,24 @@
             const item = db_surat.find(s => s.id === id);
             if(!item) return;
             const content = document.getElementById('viewModalContent');
-            const fileStatus = item.hasFile ? 
-                `<span class="text-green-600 font-bold"><i class="fa-solid fa-check-circle"></i> Uploaded</span>` : 
-                `<span class="text-red-500 font-bold"><i class="fa-solid fa-exclamation-circle"></i> Not Uploaded</span>`;
+            const fileStatus = item.hasFile && item.gdriveLink 
+                ? `<a href="${item.gdriveLink}" target="_blank" class="text-blue-600 font-bold underline flex items-center gap-1"><i class="fa-brands fa-google-drive"></i> Buka GDrive</a>` 
+                : `<span class="text-gray-400 italic">Tidak ada lampiran</span>`;
             
+            const arahIcon = item.arah === 'Masuk' ? '⬇ Masuk' : '⬆ Keluar';
+
             content.innerHTML = `
                 <div class="grid grid-cols-3 gap-4 text-sm">
-                    <div class="text-gray-500">Nomor Surat</div><div class="col-span-2 font-bold text-blue-800">${item.nomor}</div>
-                    <div class="text-gray-500">Tanggal</div><div class="col-span-2 font-mono">${item.tanggal}</div>
-                    <div class="text-gray-500">Jenis / Kategori</div><div class="col-span-2">${item.jenis} (${item.kategori})</div>
-                    <div class="text-gray-500">Arah Surat</div><div class="col-span-2">${item.arah}</div>
-                    <div class="text-gray-500">Dari</div><div class="col-span-2">${item.dari}</div>
-                    <div class="text-gray-500">Kepada</div><div class="col-span-2">${item.kepada}</div>
-                    <div class="text-gray-500">Perihal</div><div class="col-span-2 p-2 bg-gray-50 rounded border">${item.perihal}</div>
-                    <div class="text-gray-500">Status</div><div class="col-span-2"><span class="px-2 py-1 rounded bg-blue-100 text-blue-800 text-xs font-bold">${item.status}</span></div>
-                    <div class="text-gray-500">Lampiran</div><div class="col-span-2">${fileStatus}</div>
+                    <div class="text-gray-500">1. Arah Surat</div><div class="col-span-2 font-bold">${arahIcon}</div>
+                    <div class="text-gray-500">2. Nomor Surat</div><div class="col-span-2 font-bold text-blue-800 font-mono">${item.nomor}</div>
+                    <div class="text-gray-500">3. Tanggal Surat</div><div class="col-span-2 font-mono">${item.tanggal}</div>
+                    <div class="text-gray-500">4. Dari</div><div class="col-span-2 font-semibold">${item.dari}</div>
+                    <div class="text-gray-500">5. Kepada</div><div class="col-span-2 font-semibold">${item.kepada}</div>
+                    <div class="text-gray-500">6. Perihal</div><div class="col-span-2 p-2 bg-gray-50 rounded border text-gray-700">${item.perihal}</div>
+                    <div class="text-gray-500">7. Jenis Surat</div><div class="col-span-2">${item.jenis} (${item.kategori})</div>
+                    <div class="text-gray-500">8. Status</div><div class="col-span-2"><span class="px-2 py-1 rounded bg-blue-100 text-blue-800 text-xs font-bold">${item.status}</span></div>
+                    <div class="text-gray-500">9. Unit Pengelola</div><div class="col-span-2">${item.unit}</div>
+                    <div class="text-gray-500">10. Link GDrive</div><div class="col-span-2">${fileStatus}</div>
                 </div>
             `;
             document.getElementById('viewModal').classList.remove('hidden');
@@ -693,7 +752,7 @@
 
             tbody.innerHTML = '';
             const filtered = db_surat.filter(item => {
-                const matchSearch = item.nomor.toLowerCase().includes(searchVal) || item.perihal.toLowerCase().includes(searchVal);
+                const matchSearch = item.nomor.toLowerCase().includes(searchVal) || item.perihal.toLowerCase().includes(searchVal) || item.dari.toLowerCase().includes(searchVal);
                 const matchArah = filterArah === 'All' || item.arah === filterArah;
                 const matchStatus = filterStatus === 'All' || item.status === filterStatus;
                 const matchCat = filterKategori === 'All' || item.kategori === filterKategori;
@@ -731,7 +790,7 @@
                         : `<i class="fa-solid fa-arrow-up text-blue-600 bg-blue-100 p-1 rounded-full text-[10px]"></i>`;
                     
                     const fileIcon = row.hasFile 
-                        ? `<i class="fa-solid fa-paperclip text-blue-500 text-sm" title="Ada File"></i>` 
+                        ? `<i class="fa-brands fa-google-drive text-blue-600 text-sm" title="Ada Link"></i>` 
                         : `<i class="fa-solid fa-minus text-gray-300 text-xs"></i>`;
 
                     const tr = document.createElement('tr');
@@ -747,8 +806,11 @@
                         <td class="px-4 py-3 text-center">${iconArah}</td>
                         <td class="px-4 py-3 font-medium text-blue-600 whitespace-nowrap text-xs hover:underline">${row.nomor}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-500 font-mono">${row.tanggal}</td>
+                        <td class="px-4 py-3 text-xs text-gray-600 truncate max-w-[80px]">${row.dari}</td>
+                        <td class="px-4 py-3 text-xs text-gray-600 truncate max-w-[80px]">${row.kepada}</td>
                         <td class="px-4 py-3 text-gray-700 truncate max-w-xs text-xs">${row.perihal}</td>
                         <td class="px-4 py-3 text-xs text-gray-500">${row.jenis}</td>
+                        <td class="px-4 py-3 text-xs text-gray-500">${row.unit}</td>
                         <td class="px-4 py-3 text-center">${fileIcon}</td>
                         <td class="px-4 py-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] border ${stClass}">${row.status}</span></td>
                         <td class="px-4 py-3 text-center">
@@ -769,7 +831,6 @@
         // --- MAIN FUNCTIONS ---
         function handleSimpan(e) {
             e.preventDefault();
-            // ... (Simplified for brevity, logic remains same) ...
             const arah = document.getElementById('inputArah').value;
             const kategori = document.getElementById('inputKategori').value;
             const jenis = document.getElementById('inputJenis').value;
@@ -779,6 +840,7 @@
             const kepada = document.getElementById('inputKepada').value;
             const status = document.getElementById('inputStatus').value;
             const unit = document.getElementById('inputUnit').value;
+            const link = document.getElementById('inputLink').value;
 
             if(!kategori || !jenis) { alert("Data tidak lengkap!"); return; }
 
@@ -786,11 +848,12 @@
                 id: Date.now(),
                 nomor: generateNomorSurat(kategori, jenis, tanggal),
                 kategori, jenis, arah, tanggal, perihal, dari, kepada, status, unit,
-                hasFile: true // Assume upload success for demo
+                hasFile: link.length > 0,
+                gdriveLink: link
             };
 
             db_surat.unshift(newData);
-            localStorage.setItem('db_surat_v35', JSON.stringify(db_surat));
+            localStorage.setItem('db_surat_v36', JSON.stringify(db_surat));
             alert(currentLang==='id' ? "Data Tersimpan!" : "Saved!");
             document.getElementById('suratForm').reset();
             document.getElementById('inputTanggal').valueAsDate = new Date();
